@@ -1,46 +1,61 @@
 ---
-import type { Image } from "../../utils/types";
-import { getAllArticles } from "../../utils/loaders";
 import { formatDate } from "../../utils/index";
 import StrapiImage from "../../components/StrapiImage.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Pagination from "../../components/Pagination.astro";
+import { getCollection } from 'astro:content';
 
-interface Article {
-  id: number;
-  documentId: string;
-  title: string;
-  description: string;
-  slug: string;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string;
-  featuredImage: Image;
-}
+type CollectionArticle = {
+  params: { slug: string };
+  props: {
+    id: string;
+    data: {
+      title: string;
+      description: string;
+      slug: string;
+      publishedAt: string;
+      featuredImage: {
+        url: string;
+        alternativeText: string | null;
+      };
+    };
+  };
+};
+
+type PaginatedPage = {
+  data: CollectionArticle[];
+  currentPage: number;
+  total: number;
+  size: number;
+  url: {
+    prev: string | null;
+    next: string | null;
+  };
+};
 
 export async function getStaticPaths({ paginate }: { paginate: any }) {
-  const articles = [];
-  let page = 1;
-  let hasMore = true;
+  const collection = await getCollection('strapiPosts');
 
-  while (hasMore) {
-    const { data, hasMore: morePages } = await getAllArticles(page);
-    articles.push(...data);
-    hasMore = Boolean(morePages);
-    page++;
+  function createStaticPaths(articles: typeof collection) {
+    return articles.map(article => ({
+      params: { slug: article.data.slug },
+      props: {
+        id: article.id,
+        data: {
+          title: article.data.title,
+          description: article.data.description,
+          slug: article.data.slug,
+          publishedAt: article.data.publishedAt,
+          featuredImage: {
+            url: article.data.featuredImage.url,
+            alternativeText: article.data.featuredImage.alternativeText
+          }
+        }
+      }
+    }));
   }
 
-  function createStaticPaths(articles: Article[]) {
-    const data = articles.map((article: Article) => ({
-      params: { slug: article.slug },
-      props: article,
-    }));    
-    return data;
-  }
-
-  const staticPaths = createStaticPaths(articles as Article[]);
-
-  // console.log(staticPaths, "static paths");
+  const staticPaths = createStaticPaths(collection);
 
   const paginatedData = paginate(staticPaths, {
       pageSize: 5,
@@ -50,83 +65,82 @@ export async function getStaticPaths({ paginate }: { paginate: any }) {
       },
     });
 
-
   return paginatedData;
 }
 
-const { page }: any = Astro.props;
+const { page }: { page: PaginatedPage } = Astro.props;
 const articles = page.data;
-
 const currentPage = page.currentPage;
 const totalPages = Math.ceil(page.total / page.size);
+
+console.dir(articles, { depth: null });
+
 ---
 
 <BaseLayout>
+  hello
   <section class="py-8 bg-gray-50">
     <div class="container mx-auto px-4">
       <div class="mb-6 flex flex-wrap justify-center">
         <div class="flex flex-wrap -mx-3 mb-16">
-          <a href={`/blog/${articles[0].props.slug}`} class="mb-6 lg:mb-0 w-full lg:w-1/2 px-3">
-            <div class="h-full flex flex-col rounded shadow">
-              <StrapiImage
-                class="rounded-t object-cover h-80 lg:h-full w-full"
-                src={articles[0].props.featuredImage.url}
-                alt={articles[0].props.featuredImage.alternativeText}
-                height={800}
-                width={800}
-              />
-              
-              <div class="mt-auto p-6 rounded-b bg-white">
-                <span class="text-sm text-gray-400">
-                  {formatDate(articles[0].props.publishedAt)}
-                </span>
-                <h2 class="my-2 text-2xl font-bold">
-                  {articles[0].props.title}
-                </h2>
-                <p class="mb-6 text-gray-400 leading-loose">
-                  {articles[0].props.description}
-                </p>
-                <span
-                  class="text-green-600 hover:text-green-700 font-bold hover:underline"
-                >
-                  Read More
-                </span>
+          {articles.length > 0 && (
+            <a href={`/blog/${articles[0].params.slug}`} class="mb-6 lg:mb-0 w-full lg:w-1/2 px-3">
+              <div class="h-full flex flex-col rounded shadow">
+                <StrapiImage
+                  class="rounded-t object-cover h-80 lg:h-full w-full"
+                  src={articles[0].props.data.featuredImage.url}
+                  alt={articles[0].props.data.featuredImage.alternativeText || ""}
+                  height={800}
+                  width={800}
+                />
+                
+                <div class="mt-auto p-6 rounded-b bg-white">
+                  <span class="text-sm text-gray-400">
+                    {formatDate(articles[0].props.data.publishedAt)}
+                  </span>
+                  <h2 class="my-2 text-2xl font-bold">
+                    {articles[0].props.data.title}
+                  </h2>
+                  <p class="mb-6 text-gray-400 leading-loose">
+                    {articles[0].props.data.description}
+                  </p>
+                  <span
+                    class="text-green-600 hover:text-green-700 font-bold hover:underline"
+                  >
+                    Read More
+                  </span>
+                </div>
               </div>
-            </div>
-          </a>
+            </a>
+          )}
 
           <div class="flex flex-wrap w-full lg:w-1/2">
-            {
-              articles.slice(1).map((article: any) => (
-                <a href={`/blog/${article.props.slug}`} class="mb-6 w-full lg:w-1/2 px-3">
-                  <div class="rounded overflow-hidden shadow">
-                    
-                    <StrapiImage
-                      class="lg:h-48 rounded-t"
-                      src={article.props.featuredImage.url}
-                      alt={article.props.featuredImage.alternativeText}
-                      height={400}
-                      width={400}
-
-                    
-                    />
-                    <div class="p-6 rounded-b bg-white">
-                      <span class="text-sm text-gray-400">
-                        {formatDate(article.props.publishedAt)}
-                      </span>
-                      <h2 class="my-2 text-2xl font-bold">
-                        {article.props.title}
-                      </h2>
-                      <span
-                        class="text-green-600 hover:text-green-700 font-bold hover:underline"
-                      >
-                        Read More
-                      </span>
-                    </div>
+            {articles.length > 1 && articles.slice(1).map((article: CollectionArticle) => (
+              <a href={`/blog/${article.params.slug}`} class="mb-6 w-full lg:w-1/2 px-3">
+                <div class="rounded overflow-hidden shadow">
+                  <StrapiImage
+                    class="lg:h-48 rounded-t"
+                    src={article.props.data.featuredImage.url}
+                    alt={article.props.data.featuredImage.alternativeText || ""}
+                    height={400}
+                    width={400}
+                  />
+                  <div class="p-6 rounded-b bg-white">
+                    <span class="text-sm text-gray-400">
+                      {formatDate(article.props.data.publishedAt)}
+                    </span>
+                    <h2 class="my-2 text-2xl font-bold">
+                      {article.props.data.title}
+                    </h2>
+                    <span
+                      class="text-green-600 hover:text-green-700 font-bold hover:underline"
+                    >
+                      Read More
+                    </span>
                   </div>
-                </a>
-              ))
-            }
+                </div>
+              </a>
+            ))}
           </div>
         </div>
         <Pagination
@@ -137,7 +151,7 @@ const totalPages = Math.ceil(page.total / page.size);
         />
       </div>
     </div>
-  </section>
-  <!-- <pre>{JSON.stringify(page, null, 2)}</pre> -->
+  </section> 
+  <!-- <pre>{JSON.stringify(page, null, 2)}</pre>
 
 </BaseLayout>
