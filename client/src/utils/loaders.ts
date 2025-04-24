@@ -59,11 +59,6 @@ const blocksPopulate = {
   },
 };
 
-async function getCollectionType(name: string, params: object) {
-  const data = await strapiClient.collection(name).find(params);
-  return data;
-}
-
 async function getSingleType(name: string, params: object) {
   const data = await strapiClient.single(name).find(params);
   return data;
@@ -127,49 +122,4 @@ async function getLandingPageData() {
   return data;
 }
 
-async function getAllPages(page: number) {
-  const data = await getCollectionType("pages", {
-    populate: {
-      blocks: blocksPopulate,
-    },
-    pagination: {
-      page,
-      pageSize: 25,
-    },
-  });
-  if (!data?.data) throw new Error("No data found");
-  const totalPages = data?.meta?.pagination?.pageCount;
-  const currentPage = data?.meta?.pagination?.page;
-  const hasMore = currentPage && totalPages && currentPage < totalPages;
-  return { data: data.data, hasMore };
-}
-
-async function getAllArticles(page: number) {
-  const data = await getCollectionType("articles", {
-    populate: {
-      featuredImage: {
-        fields: ["url", "alternativeText"],
-      },
-      author: {
-        populate: {
-          image: {
-            fields: ["url", "alternativeText"],
-          },
-        },
-      },
-      contentTags: true,
-      blocks: blocksPopulate,
-    },
-    pagination: {
-      page,
-      pageSize: 25,
-    },
-  });
-  if (!data?.data) throw new Error("No data found");
-  const totalPages = data?.meta?.pagination?.pageCount;
-  const currentPage = data?.meta?.pagination?.page;
-  const hasMore = currentPage && totalPages && currentPage < totalPages;
-  return { data: data.data, hasMore };
-}
-
-export { getGlobalPageData, getLandingPageData, getAllPages, getAllArticles };
+export { getGlobalPageData, getLandingPageData };

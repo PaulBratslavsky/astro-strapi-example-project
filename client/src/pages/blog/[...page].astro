@@ -3,21 +3,20 @@ import { formatDate } from "../../utils/index";
 import StrapiImage from "../../components/StrapiImage.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Pagination from "../../components/Pagination.astro";
-import { getCollection } from 'astro:content';
+import { getCollection } from "astro:content";
 
 type CollectionArticle = {
   params: { slug: string };
   props: {
     id: string;
-    data: {
-      title: string;
-      description: string;
-      slug: string;
-      publishedAt: string;
-      featuredImage: {
-        url: string;
-        alternativeText: string | null;
-      };
+    documentId: string;
+    title: string;
+    description: string;
+    slug: string;
+    publishedAt: string;
+    featuredImage: {
+      url: string;
+      alternativeText: string | null;
     };
   };
 };
@@ -34,51 +33,37 @@ type PaginatedPage = {
 };
 
 export async function getStaticPaths({ paginate }: { paginate: any }) {
-  const collection = await getCollection('strapiPosts');
+  const collection = await getCollection("strapiPosts");
 
   function createStaticPaths(articles: typeof collection) {
-    return articles.map(article => ({
+    return articles.map((article) => ({
       params: { slug: article.data.slug },
-      props: {
-        id: article.id,
-        data: {
-          title: article.data.title,
-          description: article.data.description,
-          slug: article.data.slug,
-          publishedAt: article.data.publishedAt,
-          featuredImage: {
-            url: article.data.featuredImage.url,
-            alternativeText: article.data.featuredImage.alternativeText
-          }
-        }
-      }
+      props: article.data,
     }));
   }
 
   const staticPaths = createStaticPaths(collection);
 
   const paginatedData = paginate(staticPaths, {
-      pageSize: 5,
-      url: {
-        prev: "/blog",
-        next: "/blog",
-      },
-    });
+    pageSize: 5,
+    url: {
+      prev: "/blog",
+      next: "/blog",
+    },
+  });
 
   return paginatedData;
 }
 
 const { page }: { page: PaginatedPage } = Astro.props;
+
 const articles = page.data;
 const currentPage = page.currentPage;
 const totalPages = Math.ceil(page.total / page.size);
 
-console.dir(articles, { depth: null });
-
 ---
 
 <BaseLayout>
-  hello
   <section class="py-8 bg-gray-50">
     <div class="container mx-auto px-4">
       <div class="mb-6 flex flex-wrap justify-center">
@@ -88,21 +73,21 @@ console.dir(articles, { depth: null });
               <div class="h-full flex flex-col rounded shadow">
                 <StrapiImage
                   class="rounded-t object-cover h-80 lg:h-full w-full"
-                  src={articles[0].props.data.featuredImage.url}
-                  alt={articles[0].props.data.featuredImage.alternativeText || ""}
+                  src={articles[0].props.featuredImage.url}
+                  alt={articles[0].props.featuredImage.alternativeText || ""}
                   height={800}
                   width={800}
                 />
                 
                 <div class="mt-auto p-6 rounded-b bg-white">
                   <span class="text-sm text-gray-400">
-                    {formatDate(articles[0].props.data.publishedAt)}
+                    {formatDate(articles[0].props.publishedAt)}
                   </span>
                   <h2 class="my-2 text-2xl font-bold">
-                    {articles[0].props.data.title}
+                    {articles[0].props.title}
                   </h2>
                   <p class="mb-6 text-gray-400 leading-loose">
-                    {articles[0].props.data.description}
+                    {articles[0].props.description}
                   </p>
                   <span
                     class="text-green-600 hover:text-green-700 font-bold hover:underline"
@@ -120,17 +105,17 @@ console.dir(articles, { depth: null });
                 <div class="rounded overflow-hidden shadow">
                   <StrapiImage
                     class="lg:h-48 rounded-t"
-                    src={article.props.data.featuredImage.url}
-                    alt={article.props.data.featuredImage.alternativeText || ""}
+                    src={article.props.featuredImage.url}
+                    alt={article.props.featuredImage.alternativeText || ""}
                     height={400}
                     width={400}
                   />
                   <div class="p-6 rounded-b bg-white">
                     <span class="text-sm text-gray-400">
-                      {formatDate(article.props.data.publishedAt)}
+                      {formatDate(article.props.publishedAt)}
                     </span>
                     <h2 class="my-2 text-2xl font-bold">
-                      {article.props.data.title}
+                      {article.props.title}
                     </h2>
                     <span
                       class="text-green-600 hover:text-green-700 font-bold hover:underline"
@@ -152,6 +137,4 @@ console.dir(articles, { depth: null });
       </div>
     </div>
   </section> 
-  <!-- <pre>{JSON.stringify(page, null, 2)}</pre>
-
 </BaseLayout>

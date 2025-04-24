@@ -1,51 +1,29 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getAllPages } from "../../utils/loaders";
 import type { BlockData } from "../../utils/types";
 import BlockRenderer from "../../components/blocks/BlockRenderer.astro";
+import { getCollection } from "astro:content";
 
-interface Page {
-  id: number;
-  documentId: string;
-  title: string;
-  description: string;
-  slug: string;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string;
-  blocks: BlockData[];
-}
 
 export async function getStaticPaths() {
-  const pages = [];
-  let page = 1;
-  let hasMore = true;
+  const collection = await getCollection("strapiPages");
 
-  while (hasMore) {
-    const { data, hasMore: morePages } = await getAllPages(page);
-    pages.push(...data);
-    hasMore = Boolean(morePages);
-    page++;
-  }
-
-  function createStaticPaths(pages: Page[]) {
-    const data = pages.map((page: Page) => ({
-      params: { slug: page.slug },
-      props: page,
+  function createStaticPaths(articles: typeof collection) {
+    return articles.map(article => ({
+      params: { slug: article.data.slug },
+      props: article.data
     }));
-
-    return data;
   }
 
-  return createStaticPaths(pages as Page[]);
+  return createStaticPaths(collection);
 }
 
-type Props = Page;
-const page = Astro.props;
+
+const { props } = Astro;
+const { blocks } = props;
+
+console.log(props, "props");
 ---
 <BaseLayout>
-  <!-- <h1>{page.title}</h1>
-  <p>{page.description}</p>
-  <pre>{JSON.stringify(page, null, 2)}</pre> -->
-  <BlockRenderer blocks={page?.blocks || []} />
+  <BlockRenderer blocks={blocks || []} />
 </BaseLayout>
