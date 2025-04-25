@@ -13,6 +13,7 @@
     "@tailwindcss/vite": "^4.0.9",
     "astro": "^5.4.1",
     "marked": "^15.0.7",
+    "strapi-community-astro-loader-v2": "^2.0.1",
     "tailwindcss": "^4.0.9"
   }
 }

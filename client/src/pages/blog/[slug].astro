@@ -1,68 +1,26 @@
 ---
-import type { Image, BlockData } from "../../utils/types";
-import { getAllArticles } from "../../utils/loaders";
 import StrapiImage from "../../components/StrapiImage.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Markdown from "../../components/blocks/Markdown.astro";
 import BlockRenderer from "../../components/blocks/BlockRenderer.astro";
-
-interface Article {
-  id: number;
-  documentId: string;
-  title: string;
-  description: string;
-  content: string;
-  slug: string;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string;
-  featuredImage: Image;
-  author: {
-    id: number;
-    documentId: string;
-    fullName: string;
-    bio: string;
-    image: Image;
-  };
-  contentTags: {
-    id: number;
-    documentId: string;
-    title: string;
-  }[];
-  blocks: BlockData[];
-}
+import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
-  const articles = [];
-  let page = 1;
-  let hasMore = true;
+  const collection = await getCollection('strapiPosts');
 
-  while (hasMore) {
-    const { data, hasMore: morePages } = await getAllArticles(page);
-    articles.push(...data);
-    hasMore = Boolean(morePages);
-    page++;
-  }
-
-  function createStaticPaths(articles: Article[]) {
-    const data = articles.map((article: Article) => ({
-      params: { slug: article.slug },
-      props: article,
+  function createStaticPaths(articles: typeof collection) {
+    return articles.map(article => ({
+      params: { slug: article.data.slug },
+      props: article.data
     }));
-
-    return data;
   }
 
-  return createStaticPaths(articles as Article[]);
+  return createStaticPaths(collection);
 }
 
-type Props = Article;
-const post = Astro.props;
+const { props } = Astro;
+const { featuredImage, author, contentTags, blocks, title, content } = props;
 
-const blocks = post?.blocks || [];
-const featuredImage = post?.featuredImage || {};
-const author = post?.author || {};
-const tags = post?.contentTags || [];
 ---
 
 <BaseLayout>
@@ -74,7 +32,7 @@ const tags = post?.contentTags || [];
             <StrapiImage
               class="w-full h-80 object-cover rounded-lg"
               src={featuredImage.url}
-              alt={featuredImage.alternativeText}
+              alt={featuredImage?.alternativeText}
               height={600}
               width={800}
             />
@@ -83,7 +41,7 @@ const tags = post?.contentTags || [];
       </div>
       <div class="py-14 max-w-2xl mx-auto text-center">
         {
-          tags.length > 0 && tags.map((tag) => (
+          contentTags && contentTags.length > 0 && contentTags.map((tag: any) => (
             <span class="uppercase text-base lg:text-xl text-green-600 hover:text-green-700 hover:underline">
               {tag.title}
             </span>
@@ -96,7 +54,7 @@ const tags = post?.contentTags || [];
         </span>
         <div class="mt-2">
           <h2 class="mb-6 text-4xl lg:text-5xl font-bold font-heading">
-            {post.title}
+            {title}
           </h2>
           {
             author?.image && (
@@ -129,7 +87,7 @@ const tags = post?.contentTags || [];
           }
         </div>
       </div>
-      { post?.content && <Markdown data={{ content: post.content, __component: "blocks.markdown" }} />} 
+      { content && <Markdown data={{ content: content, __component: "blocks.markdown" }} />} 
     </div>
   </section>
   <BlockRenderer blocks={blocks} />

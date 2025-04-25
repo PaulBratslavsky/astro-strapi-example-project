@@ -2,6 +2,8 @@
 
 This is an example project for Astro 5 and Strapi 5. It is a simple project that uses Astro 5 and Strapi 5 to create a website with a landing page, a blog, and a contact form.
 
+Uses the new strapi-community-astro-loader-v2 to fetch data from Strapi for pages and articles.
+
 (contact form not implemented yet)
 
 ![Screenshot of the project](./img/0-intro.gif)
