@@ -641,11 +641,6 @@
   dependencies:
     "@types/unist" "*"
 
-"@types/qs@^6.9.18":
-  version "6.9.18"
-  resolved "https://registry.npmjs.org/@types/qs/-/qs-6.9.18.tgz"
-  integrity sha512-kK7dgTYDyGqS+e2Q4aK9X3D7q234CIZ1Bv0q/7Z5IwRDoADNU81xXJK/YVyLbLTZCoIwUoDoffFeF+p/eIklAA==
-
 "@types/unist@*", "@types/unist@^3.0.0":
   version "3.0.3"
   resolved "https://registry.npmjs.org/@types/unist/-/unist-3.0.3.tgz"
@@ -2219,7 +2214,7 @@ property-information@^7.0.0:
   resolved "https://registry.npmjs.org/property-information/-/property-information-7.0.0.tgz"
   integrity sha512-7D/qOz/+Y4X/rzSB6jKxKUsQnphO046ei8qxG59mtM3RG3DHgTK81HrxrmoDVINJb8NKT5ZsRbwHvQ6B68Iyhg==
 
-qs@6.14.0, qs@^6.14.0:
+qs@6.14.0:
   version "6.14.0"
   resolved "https://registry.npmjs.org/qs/-/qs-6.14.0.tgz"
   integrity sha512-YWWTjgABSKcvs/nWBi9PycY/JiPJqOD4JA6o9Sej2AtvSGarXxKC3OQSk4pAarbdQlKAh5D4FCQkJNkW+GAn3w==
@@ -2530,14 +2525,12 @@ sprintf-js@~1.0.2:
   resolved "https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.0.3.tgz"
   integrity sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==
 
-strapi-community-astro-loader-v2@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.npmjs.org/strapi-community-astro-loader-v2/-/strapi-community-astro-loader-v2-2.0.1.tgz"
-  integrity sha512-kZHz41IOVnsiGTZAGhvhIzK6OsOxrCK6yjZZQwo6T3Tkh1WILrYtsb9fjfWRUAWGFKuTCvz0t2VQ4NA4xpL83A==
+strapi-community-astro-loader@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/strapi-community-astro-loader/-/strapi-community-astro-loader-2.0.0.tgz#260721cbc4a9274286d83fdffac6029a96cdb6a3"
+  integrity sha512-vujYBbBmAfVNYoq+3lHyKPWr3GaWb16rw2YW8fFuHyf2HZCXKJFZJTfrKTfo/B3rxwr9ZmTWDqiC7FLg763HSA==
   dependencies:
     "@strapi/client" "^1.2.0"
-    "@types/qs" "^6.9.18"
-    qs "^6.14.0"
 
 string-width@^4.1.0:
   version "4.2.3"

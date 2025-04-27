@@ -1,6 +1,6 @@
 import type { Loader } from "astro/loaders";
 import { defineCollection } from "astro:content";
-import { strapiLoader } from "strapi-community-astro-loader-v2";
+import { strapiLoader } from "strapi-community-astro-loader";
 
 const blocksPopulate = {
   on: {
@@ -63,7 +63,7 @@ const blocksPopulate = {
 
 const strapiPosts = defineCollection({
   loader: strapiLoader({
-    contentType: "articles",
+    contentType: "article",
     params: {
       populate: {
         featuredImage: {
@@ -87,7 +87,7 @@ const strapiPosts = defineCollection({
 
 const strapiPages = defineCollection({
   loader: strapiLoader({
-    contentType: "pages",
+    contentType: "page",
     params: {
       populate: {
         blocks: blocksPopulate,
