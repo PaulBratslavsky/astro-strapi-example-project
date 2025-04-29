@@ -5,10 +5,20 @@ import Markdown from "../../components/blocks/Markdown.astro";
 import BlockRenderer from "../../components/blocks/BlockRenderer.astro";
 import { getCollection } from 'astro:content';
 
+import type { CollectionEntry } from "astro:content";
+
+// Use with Astro's collection entry type
+type Post = CollectionEntry<"strapiPosts">;
+
+type CollectionArticle = {
+  params: { slug: string };
+  props: Post;
+};
+
 export async function getStaticPaths() {
   const collection = await getCollection('strapiPosts');
 
-  function createStaticPaths(articles: typeof collection) {
+  function createStaticPaths(articles: Post[]) {
     return articles.map(article => ({
       params: { slug: article.data.slug },
       props: article.data
@@ -60,7 +70,6 @@ const { featuredImage, author, contentTags, blocks, title, content } = props;
             author?.image && (
               <div class="flex justify-center">
                 <div class="mr-4">
- 
               <StrapiImage
                 src={author.image.url}
                 alt={author.image.alternativeText}

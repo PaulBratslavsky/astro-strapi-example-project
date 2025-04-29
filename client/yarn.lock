@@ -2525,10 +2525,10 @@ sprintf-js@~1.0.2:
   resolved "https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.0.3.tgz"
   integrity sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==
 
-strapi-community-astro-loader@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/strapi-community-astro-loader/-/strapi-community-astro-loader-2.0.0.tgz#260721cbc4a9274286d83fdffac6029a96cdb6a3"
-  integrity sha512-vujYBbBmAfVNYoq+3lHyKPWr3GaWb16rw2YW8fFuHyf2HZCXKJFZJTfrKTfo/B3rxwr9ZmTWDqiC7FLg763HSA==
+strapi-community-astro-loader@^2.0.5:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/strapi-community-astro-loader/-/strapi-community-astro-loader-2.0.5.tgz#8351f9a7b49d2e5b08d7f40c42ade24d57b11b76"
+  integrity sha512-chO4VOWWEO9MBSfrSg/0Xj1pFudjGX7kK+iQVqITkWAyeLX2vR3lZGJQt65rpP99bXHAKTmP+hF9CkZFIGr2tA==
   dependencies:
     "@strapi/client" "^1.2.0"
 

@@ -5,20 +5,14 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import Pagination from "../../components/Pagination.astro";
 import { getCollection } from "astro:content";
 
+import type { CollectionEntry } from "astro:content";
+
+// Use with Astro's collection entry type
+type Post = CollectionEntry<"strapiPosts">;
+
 type CollectionArticle = {
   params: { slug: string };
-  props: {
-    id: string;
-    documentId: string;
-    title: string;
-    description: string;
-    slug: string;
-    publishedAt: string;
-    featuredImage: {
-      url: string;
-      alternativeText: string | null;
-    };
-  };
+  props: Post;
 };
 
 type PaginatedPage = {
@@ -35,10 +29,10 @@ type PaginatedPage = {
 export async function getStaticPaths({ paginate }: { paginate: any }) {
   const collection = await getCollection("strapiPosts");
 
-  function createStaticPaths(articles: typeof collection) {
+  function createStaticPaths(articles: Post[]) {
     return articles.map((article) => ({
       params: { slug: article.data.slug },
-      props: article.data,
+      props: article,
     }));
   }
 
@@ -73,21 +67,21 @@ const totalPages = Math.ceil(page.total / page.size);
               <div class="h-full flex flex-col rounded shadow">
                 <StrapiImage
                   class="rounded-t object-cover h-80 lg:h-full w-full"
-                  src={articles[0].props.featuredImage.url}
-                  alt={articles[0].props.featuredImage.alternativeText || ""}
+                  src={articles[0].props.data.featuredImage.url}
+                  alt={articles[0].props.data.featuredImage.alternativeText || ""}
                   height={800}
                   width={800}
                 />
                 
                 <div class="mt-auto p-6 rounded-b bg-white">
-                  <span class="text-sm text-gray-400">
-                    {formatDate(articles[0].props.publishedAt)}
-                  </span>
+                    <span class="text-sm text-gray-400">
+                      {formatDate(articles[0].props.data.publishedAt)}
+                    </span>
                   <h2 class="my-2 text-2xl font-bold">
-                    {articles[0].props.title}
+                    {articles[0].props.data.title}
                   </h2>
                   <p class="mb-6 text-gray-400 leading-loose">
-                    {articles[0].props.description}
+                    {articles[0].props.data.description}
                   </p>
                   <span
                     class="text-green-600 hover:text-green-700 font-bold hover:underline"
@@ -105,17 +99,17 @@ const totalPages = Math.ceil(page.total / page.size);
                 <div class="rounded overflow-hidden shadow">
                   <StrapiImage
                     class="lg:h-48 rounded-t"
-                    src={article.props.featuredImage.url}
-                    alt={article.props.featuredImage.alternativeText || ""}
+                    src={article.props.data.featuredImage.url}
+                    alt={article.props.data.featuredImage.alternativeText || ""}
                     height={400}
                     width={400}
                   />
                   <div class="p-6 rounded-b bg-white">
                     <span class="text-sm text-gray-400">
-                      {formatDate(article.props.publishedAt)}
+                      {formatDate(article.props.data.publishedAt)}
                     </span>
                     <h2 class="my-2 text-2xl font-bold">
-                      {article.props.title}
+                      {article.props.data.title}
                     </h2>
                     <span
                       class="text-green-600 hover:text-green-700 font-bold hover:underline"
