@@ -4,7 +4,7 @@
 
 We recently upgraded our [Astro + Strapi starter project](https://github.com/PaulBratslavsky/astro-strapi-example-project) to Astro 6, and it wasn't entirely smooth. The upgrade broke our content loader, forced us to rethink our schemas, and led to publishing a new major version of the [strapi-community-astro-loader](https://www.npmjs.com/package/strapi-community-astro-loader).
 
-This post covers what actually changed in Astro 6, what broke, how we fixed it, and how the data loading pipeline works if you want to build on top of this setup.
+This post covers what's new in Astro 6, what we had to update in our starter and loader to support it, and how the data loading pipeline works if you want to build on top of this setup.
 
 ## What Changed in Astro 6
 
