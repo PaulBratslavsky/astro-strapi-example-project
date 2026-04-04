@@ -39,8 +39,8 @@ const blockSchema = z.discriminatedUnion("__component", [
     __component: z.literal("blocks.hero"),
     heading: z.string(),
     text: z.string(),
-    image: imageSchema,
-    links: z.array(linkSchema),
+    image: imageSchema.nullable().optional(),
+    links: z.array(linkSchema).optional(),
   }),
   z.object({
     ...blockBase,
@@ -124,6 +124,38 @@ const blockSchema = z.discriminatedUnion("__component", [
     label: z.string(),
     formId: z.string().nullable().optional(),
   }),
+  z.object({
+    ...blockBase,
+    __component: z.literal("blocks.community-links"),
+    heading: z.string().nullable().optional(),
+    link: z.array(
+      z.object({
+        id: z.number().optional(),
+        title: z.string(),
+        description: z.string(),
+        href: z.string(),
+        label: z.string(),
+      })
+    ).optional(),
+  }),
+  z.object({
+    ...blockBase,
+    __component: z.literal("blocks.featured-workshops"),
+    workshops: z.array(
+      z.object({
+        id: z.number().optional(),
+        documentId: z.string().optional(),
+        title: z.string(),
+        description: z.string(),
+        slug: z.string(),
+        instructor: z.string().nullable().optional(),
+        skillLevel: z.string().nullable().optional(),
+        duration: z.string().nullable().optional(),
+        price: z.number().nullable().optional(),
+        coverImage: imageSchema.nullable().optional(),
+      })
+    ),
+  }),
 ]);
 
 // ── Populate configs ──
@@ -185,6 +217,22 @@ const blocksPopulate = {
     },
     "blocks.newsletter": {
       fields: ["heading", "text", "placeholder", "label", "formId"],
+    },
+    "blocks.community-links": {
+      fields: ["heading"],
+      populate: {
+        link: { fields: ["title", "description", "href", "label"] },
+      },
+    },
+    "blocks.featured-workshops": {
+      populate: {
+        workshops: {
+          fields: ["title", "description", "slug", "instructor", "skillLevel", "duration", "price"],
+          populate: {
+            coverImage: { fields: ["url", "alternativeText"] },
+          },
+        },
+      },
     },
   },
 };
@@ -257,7 +305,33 @@ const strapiPages = defineCollection({
   }),
 });
 
+const strapiWorkshops = defineCollection({
+  loader: strapiLoader({
+    contentType: "workshop",
+    clientConfig,
+    params: {
+      fields: ["title", "slug", "description", "instructor", "skillLevel", "duration", "date", "price", "learningOutcomes"],
+      populate: {
+        coverImage: { fields: ["url", "alternativeText"] },
+      },
+    },
+  }),
+  schema: z.object({
+    title: z.string(),
+    slug: z.string(),
+    description: z.string().nullable().optional(),
+    instructor: z.string().nullable().optional(),
+    skillLevel: z.enum(["beginner", "intermediate", "advanced"]).nullable().optional(),
+    duration: z.string().nullable().optional(),
+    date: z.string().nullable().optional(),
+    price: z.number().nullable().optional(),
+    coverImage: imageSchema.nullable().optional(),
+    learningOutcomes: z.string().nullable().optional(),
+  }),
+});
+
 export const collections = {
   strapiPosts,
   strapiPages,
+  strapiWorkshops,
 };

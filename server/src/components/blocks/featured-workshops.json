@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_blocks_featured_workshops",
+  "info": {
+    "displayName": "Featured Workshops"
+  },
+  "options": {},
+  "attributes": {
+    "workshops": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::workshop.workshop"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_blocks_community_links",
+  "info": {
+    "displayName": "Community Links"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string"
+    },
+    "link": {
+      "displayName": "Link",
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.community-link"
+    }
+  }
+}

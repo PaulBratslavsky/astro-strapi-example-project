@@ -1,0 +1,58 @@
+{
+  "kind": "collectionType",
+  "collectionName": "workshops",
+  "info": {
+    "singularName": "workshop",
+    "pluralName": "workshops",
+    "displayName": "Workshop",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title"
+    },
+    "description": {
+      "type": "text"
+    },
+    "instructor": {
+      "type": "string"
+    },
+    "skillLevel": {
+      "type": "enumeration",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ]
+    },
+    "duration": {
+      "type": "string"
+    },
+    "date": {
+      "type": "datetime"
+    },
+    "price": {
+      "type": "decimal"
+    },
+    "coverImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "learningOutcomes": {
+      "type": "richtext"
+    }
+  }
+}

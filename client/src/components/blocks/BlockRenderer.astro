@@ -9,11 +9,13 @@ import PersonCard from "./PersonCard.astro";
 import Markdown from "./Markdown.astro";
 import FeaturedArticles from "./FeaturedArticles.astro";
 import Newsletter from "./Newsletter.astro";
+import CommunityLinks from "./CommunityLinks.astro";
+import FeaturedWorkshops from "./FeaturedWorkshops.astro";
 
 
 const componentMap: Record<ComponentType, any> = {
   "blocks.hero": Hero,
-  "blocks.heading-section": HeadingSection, 
+  "blocks.heading-section": HeadingSection,
   "blocks.card-grid": CardGrid,
   "blocks.content-with-image": ContentWithImage,
   "blocks.faqs": Faqs,
@@ -21,6 +23,8 @@ const componentMap: Record<ComponentType, any> = {
   "blocks.markdown": Markdown,
   "blocks.featured-articles": FeaturedArticles,
   "blocks.newsletter": Newsletter,
+  "blocks.community-links": CommunityLinks,
+  "blocks.featured-workshops": FeaturedWorkshops,
 };
 
 const { blocks } = Astro.props;

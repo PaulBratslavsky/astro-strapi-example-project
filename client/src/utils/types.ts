@@ -42,7 +42,9 @@ export type ComponentType =
   | "blocks.person-card"
   | "blocks.markdown"
   | "blocks.featured-articles"
-  | "blocks.newsletter";
+  | "blocks.newsletter"
+  | "blocks.community-links"
+  | "blocks.featured-workshops";
 
 export interface Base<
   T extends ComponentType,
@@ -133,6 +135,32 @@ export interface NewsletterProps extends Base<"blocks.newsletter"> {
   formId: string;
 }
 
+export interface CommunityLinksProps extends Base<"blocks.community-links"> {
+  heading: string;
+  link: {
+    id?: number;
+    title: string;
+    description: string;
+    href: string;
+    label: string;
+  }[];
+}
+
+export interface FeaturedWorkshopsProps extends Base<"blocks.featured-workshops"> {
+  workshops: {
+    id: number;
+    documentId: string;
+    title: string;
+    description: string;
+    slug: string;
+    instructor: string;
+    skillLevel: string;
+    duration: string;
+    price: number;
+    coverImage: Image;
+  }[];
+}
+
 export type BlockData =
   | HeroProps
   | HeadingSectionProps
@@ -142,4 +170,6 @@ export type BlockData =
   | PersonCardProps
   | MarkdownProps
   | FeaturedArticlesProps
-  | NewsletterProps;
+  | NewsletterProps
+  | CommunityLinksProps
+  | FeaturedWorkshopsProps;

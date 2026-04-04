@@ -427,105 +427,80 @@ Handles absolute URLs (pass through), relative URLs (prepend Strapi base), and d
 
 The starter includes a [Claude Code skill](https://strapi.io/blog/what-are-agent-skills-and-how-to-use-them) that lets you add new pages without manually wiring up Strapi schemas, Astro collections, and page routes. One command scaffolds the full stack — from database schema to styled frontend.
 
-### Example: Adding an Events Page
+The skill supports two page architectures:
+- **Collection pages** (workshops, team, events) — creates a new Strapi collection type with its own API, seed data, listing page, and detail pages
+- **Block-based pages** (community, about, pricing) — creates an entry in the existing Page collection type using dynamic zone blocks — no new Astro page file needed
 
-We ran `/add-page events` and told Claude we wanted each event to have a name, date, location, cover image, and ticket price with three sample events.
+### Example: Building a Community Page with Workshops
 
-```
-> /add-page events
-
-Each event should have: name, date, location, a cover image, and a ticket
-price. Create 3 sample events — a tech conference, a design workshop, and
-a community meetup.
-```
-
-Here's what the skill generated:
-
-#### Strapi Content Type
-
-A full API structure with schema, controller, routes, and service — all following the existing project patterns:
+We ran a single `/add-page` command that created both a workshops collection and a community landing page that references it:
 
 ```
-server/src/api/event/
-├── content-types/event/schema.json
-├── controllers/event.ts
-├── routes/event.ts
-└── services/event.ts
+> /add-page community
+
+Create a community page with a hero section welcoming people, a grid of
+4 benefit cards, links to the Astro and Strapi GitHub repos and Discord
+servers, and a featured workshops section. The workshops should be a
+separate collection at /workshops with title, instructor, skill level,
+duration, date, price, cover image, and learning outcomes. Create 3
+sample workshops.
 ```
 
-The schema includes `title`, `slug`, `description` as base fields, plus the custom fields: `date` (datetime), `location` (string), `price` (decimal), and `coverImage` (media).
+The skill determined this required **both paths** and handled them together.
 
-![IMAGE: Screenshot of the Strapi admin panel showing the Event content type with the fields listed — title, slug, description, date, location, price, coverImage](placeholder-strapi-event-content-type.png)
+#### Part 1: Workshop Collection (collection path)
 
-#### Seed Script with Sample Data
+The skill created a new `workshop` collection type following the existing article/page patterns:
 
-A seed script at `server/scripts/seed-event.js` that does four things in one run:
-
-1. **Sets public API permissions** — enables `find` and `findOne` so the Astro frontend can fetch events without authentication
-2. **Downloads and uploads placeholder images** — pulls unique images from picsum.photos and attaches them to each entry via Strapi's upload service
-3. **Creates three realistic entries** — FutureStack 2026 ($299), Design Systems Workshop ($149), and Community Builders Meetup (Free), each with a real date, location, and description
-4. **Adds a navigation link** — updates the Global header's `navItems` so "Events" appears in the site nav automatically
-
-No manual admin panel work needed — `node scripts/seed-event.js` and you have a working page with content.
-
-![IMAGE: Screenshot of the Strapi admin showing the three seeded event entries in the list view — FutureStack 2026, Design Systems Workshop, Community Builders Meetup](placeholder-strapi-event-list.png)
-
-#### Astro Content Collection
-
-The skill updated `client/src/content.config.ts` with a new `strapiEvents` collection, using explicit `fields` and `populate` params to fetch only what the templates need:
-
-```typescript
-const strapiEvents = defineCollection({
-  loader: strapiLoader({
-    contentType: "event",
-    clientConfig,
-    params: {
-      fields: ["title", "slug", "description", "date", "location", "price"],
-      populate: {
-        coverImage: { fields: ["url", "alternativeText"] },
-      },
-    },
-  }),
-  schema: z.object({
-    title: z.string(),
-    slug: z.string(),
-    description: z.string().nullable().optional(),
-    date: z.string().nullable().optional(),
-    location: z.string().nullable().optional(),
-    price: z.number().nullable().optional(),
-    coverImage: imageSchema.nullable().optional(),
-  }),
-});
+```
+server/src/api/workshop/
+├── content-types/workshop/schema.json
+├── controllers/workshop.ts
+├── routes/workshop.ts
+└── services/workshop.ts
 ```
 
-Note that `price` is typed as `z.number()` (not a string) and all media/optional fields use `.nullable().optional()` — Strapi returns `null` for empty fields, not `undefined`.
+Fields include `title`, `slug`, `description`, plus custom fields: `instructor` (string), `skillLevel` (enum: beginner/intermediate/advanced), `duration` (string), `date` (datetime), `price` (decimal), `coverImage` (media), and `learningOutcomes` (richtext).
 
-#### Event-Specific Page Design
+The seed script downloads placeholder images, creates 3 workshops (a free beginner web dev course, an intermediate design systems class at $199, and an advanced API architecture session at $349), sets public permissions, and adds "Workshops" to the nav.
 
-This is where the updated skill really shows its value. Instead of generating a generic card grid (like a blog), it recognized that events have different UX conventions and produced an **event-appropriate layout**:
+The Astro listing page uses a **bordered card grid** with skill-level badges overlaid on cover images (green for beginner, amber for intermediate, red for advanced), instructor attribution, and a metadata row with date, duration, and price. The detail page has an info block with icons and a "What You'll Learn" section rendering the richtext outcomes as checkmarked list items.
 
-**Listing page** (`/events`) — Horizontal event cards with a prominent date block (month + day) on the left, a cover image thumbnail, event details (title, location icon, time icon) in the middle, and a price badge on the right. Free events get a green "Free" badge.
+![IMAGE: Screenshot of the workshops listing page showing three workshop cards with skill level badges, instructor names, and prices](placeholder-workshops-listing.png)
 
-![IMAGE: Screenshot of the events listing page showing the three events in horizontal card layout with date blocks, location pins, and price badges](placeholder-events-listing.png)
+![IMAGE: Screenshot of a workshop detail page with cover image, skill level and price badges, info block, and learning outcomes](placeholder-workshop-detail.png)
 
-**Detail page** (`/events/[slug]`) — Cover image hero at the top, followed by a structured info block with calendar, map pin, and price icons showing the date, location, and cost at a glance, then the full description below.
+#### Part 2: Community Page (block-based path)
 
-![IMAGE: Screenshot of the FutureStack 2026 event detail page showing the cover image, date/location/price info block, and description](placeholder-event-detail.png)
+Instead of creating a separate content type, the skill recognized this as a **block-based page** and created an entry in the existing Page collection type using dynamic zone blocks:
 
-Compare this to a blog listing (featured post + compact list) or a team page (centered circular headshots) — the skill adapts the design to match what users expect for each content type, not a one-size-fits-all template.
+1. **Mapped sections to existing blocks** — the hero section used `blocks.hero`, the section heading used `blocks.heading-section`, and the benefit cards used `blocks.card-grid`. No new components needed for these.
 
-### What the Skill Actually Does
+2. **Created new block components** where needed:
+   - `blocks.community-links` — a new block with a repeatable `shared.community-link` sub-component (title, description, href, label) for the external GitHub/Discord links
+   - `blocks.featured-workshops` — a new block with a `oneToMany` relation to the workshop collection, following the existing `blocks.featured-articles` pattern
 
-Under the hood, the `/add-page` skill is a markdown file at `.claude/skills/add-page/SKILL.md` that instructs Claude Code to:
+3. **Registered everything** — updated the page schema's dynamic zone, added Zod schemas and populate configs in `content.config.ts`, created Astro renderer components, and registered them in `BlockRenderer.astro`.
 
-1. **Ask** what fields the page needs (or use sensible defaults)
+4. **Seeded the page** — the seed script creates a Page entry with 5 blocks in the dynamic zone (hero → heading → cards → community links → featured workshops), downloads a hero placeholder image, and adds "Community" to the nav.
+
+The community page renders automatically via the catch-all `[slug]/index.astro` route — **no new Astro page file was created**. The `BlockRenderer` handles all the blocks.
+
+![IMAGE: Screenshot of the community page showing the hero, benefit cards, community links, and featured workshops sections](placeholder-community-page.png)
+
+![IMAGE: Screenshot of the Strapi admin showing the Community page entry with blocks in the dynamic zone](placeholder-strapi-community-blocks.png)
+
+#### What the Skill Does Under the Hood
+
+The `/add-page` skill is a markdown file at `.claude/skills/add-page/SKILL.md` that instructs Claude Code to:
+
+1. **Determine the page type** — collection (list of items) or block-based (single page with sections). If a request involves both, handle both paths.
 2. **Read** the existing project code to match patterns exactly
-3. **Create** the Strapi content type (schema + controller + routes + service)
-4. **Write** a seed script that handles permissions, image uploads, sample data, and navigation — all via Strapi's programmatic API
-5. **Update** the Astro content collection config with proper populate params and Zod schemas
-6. **Design** listing and detail pages with UI patterns appropriate for the content type
+3. **For collections** — create the Strapi content type, seed script with images, Astro content collection config, and listing/detail pages with content-appropriate design
+4. **For block-based pages** — map sections to existing block components, create new blocks when needed (including relation blocks that reference collections), seed a Page entry with the dynamic zone populated
+5. **Design** pages using the project's theme tokens and UX best practices from the design patterns guide — adapting layout to content type rather than using a generic template
 
-It's not a rigid code generator — it's a set of instructions that Claude interprets based on what you're building. The same skill produces circular avatar grids for team pages, date-prominent cards for events, and product cards with prices for e-commerce. You can modify the skill file to add your own patterns or change the defaults.
+It's not a rigid code generator — it's a set of instructions that Claude interprets based on what you're building. The same skill produces circular avatar grids for team pages, date-prominent cards for workshops, and block-based landing pages for community/about pages. You can modify the skill file to add your own patterns or change the defaults.
 
 For a deeper look at what agent skills are and how to build your own, check out [What Are Agent Skills and How to Use Them](https://strapi.io/blog/what-are-agent-skills-and-how-to-use-them).
 

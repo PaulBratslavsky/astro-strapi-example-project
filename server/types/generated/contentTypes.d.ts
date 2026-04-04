@@ -609,6 +609,8 @@ export interface ApiPagePage extends Struct.CollectionTypeSchema {
         'blocks.card-grid',
         'blocks.markdown',
         'blocks.featured-articles',
+        'blocks.community-links',
+        'blocks.featured-workshops',
       ]
     >;
     createdAt: Schema.Attribute.DateTime;
@@ -647,6 +649,46 @@ export interface ApiTagTag extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
     title: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiWorkshopWorkshop extends Struct.CollectionTypeSchema {
+  collectionName: 'workshops';
+  info: {
+    description: '';
+    displayName: 'Workshop';
+    pluralName: 'workshops';
+    singularName: 'workshop';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    coverImage: Schema.Attribute.Media<'images'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    date: Schema.Attribute.DateTime;
+    description: Schema.Attribute.Text;
+    duration: Schema.Attribute.String;
+    instructor: Schema.Attribute.String;
+    learningOutcomes: Schema.Attribute.RichText;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::workshop.workshop'
+    > &
+      Schema.Attribute.Private;
+    price: Schema.Attribute.Decimal;
+    publishedAt: Schema.Attribute.DateTime;
+    skillLevel: Schema.Attribute.Enumeration<
+      ['beginner', 'intermediate', 'advanced']
+    >;
+    slug: Schema.Attribute.UID<'title'>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1170,6 +1212,7 @@ declare module '@strapi/strapi' {
       'api::landing-page.landing-page': ApiLandingPageLandingPage;
       'api::page.page': ApiPagePage;
       'api::tag.tag': ApiTagTag;
+      'api::workshop.workshop': ApiWorkshopWorkshop;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

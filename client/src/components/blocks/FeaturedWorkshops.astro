@@ -1,0 +1,77 @@
+---
+import type { FeaturedWorkshopsProps } from "../../utils/types";
+import StrapiImage from "../StrapiImage.astro";
+
+interface Props {
+  data: FeaturedWorkshopsProps;
+}
+
+const {
+  data: { workshops },
+} = Astro.props;
+
+const levelConfig: Record<string, { label: string; color: string }> = {
+  beginner: { label: "Beginner", color: "bg-green-100 text-green-700" },
+  intermediate: { label: "Intermediate", color: "bg-amber-100 text-amber-700" },
+  advanced: { label: "Advanced", color: "bg-red-100 text-red-700" },
+};
+
+function formatPrice(price: number | null | undefined) {
+  if (price === null || price === undefined) return null;
+  if (price === 0) return "Free";
+  return `$${price.toFixed(2)}`;
+}
+---
+
+<section>
+  <div class="mx-auto max-w-5xl px-6 py-16">
+    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      {workshops.map((workshop) => {
+        const level = workshop.skillLevel ? levelConfig[workshop.skillLevel] : null;
+        const priceLabel = formatPrice(workshop.price);
+
+        return (
+          <a
+            href={`/workshops/${workshop.slug}`}
+            class="group flex flex-col rounded-xl border border-border bg-surface-raised overflow-hidden transition hover:shadow-lg hover:border-border-hover"
+          >
+            <div class="relative overflow-hidden">
+              {workshop.coverImage ? (
+                <StrapiImage
+                  class="aspect-[16/10] w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                  src={workshop.coverImage.url}
+                  alt={workshop.coverImage.alternativeText || ""}
+                  height={300}
+                  width={480}
+                />
+              ) : (
+                <div class="aspect-[16/10] w-full bg-surface-alt" />
+              )}
+              {level && (
+                <span class={`absolute top-3 left-3 rounded-full px-3 py-1 text-xs font-semibold ${level.color}`}>
+                  {level.label}
+                </span>
+              )}
+            </div>
+            <div class="flex flex-col flex-1 p-6">
+              <h3 class="text-lg font-semibold text-secondary group-hover:text-primary-600 transition font-heading leading-snug">
+                {workshop.title}
+              </h3>
+              {workshop.instructor && (
+                <p class="mt-1 text-sm text-primary-600">by {workshop.instructor}</p>
+              )}
+              <p class="mt-3 text-sm text-muted leading-relaxed line-clamp-2 flex-1">
+                {workshop.description}
+              </p>
+              {priceLabel && (
+                <p class={`mt-4 text-sm font-semibold ${workshop.price === 0 ? 'text-green-700' : 'text-secondary'}`}>
+                  {priceLabel}
+                </p>
+              )}
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  </div>
+</section>

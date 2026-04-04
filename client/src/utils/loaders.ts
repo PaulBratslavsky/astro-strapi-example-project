@@ -56,6 +56,22 @@ const blocksPopulate = {
       },
     },
     "blocks.newsletter": true,
+    "blocks.community-links": {
+      populate: {
+        link: true,
+      },
+    },
+    "blocks.featured-workshops": {
+      populate: {
+        workshops: {
+          populate: {
+            coverImage: {
+              fields: ["url", "alternativeText"],
+            },
+          },
+        },
+      },
+    },
   },
 };
 

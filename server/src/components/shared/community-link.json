@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_shared_community_links",
+  "info": {
+    "displayName": "Community Link"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "href": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    }
+  }
+}

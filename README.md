@@ -217,22 +217,29 @@ Claude will ask you what fields the page needs, then generate:
 - **Strapi**: content type schema, controller, routes, service, and a seed script with sample data, placeholder images, public permissions, and a navigation link
 - **Astro**: content collection config, listing page, and detail page — all wired up and styled to match the content type (team pages get people-focused layouts, product pages get commerce-style cards, etc.)
 
-**Example: adding a products page**
+The skill supports two page architectures:
+- **Collection pages** (workshops, team, events) — creates a new Strapi collection type with listing and detail pages
+- **Block-based pages** (community, about, pricing) — creates an entry in the existing Page collection type using dynamic zone blocks, rendered automatically by the catch-all route
+
+### Example: Workshops + Community (created with the skill)
+
+The `/workshops` and `/community` pages in this project were both created using `/add-page` in a single prompt:
 
 ```
-> /add-page products
+> /add-page community
 
-What fields should each product have?
-
-> name, price (number), image, and a short description
-
-Creating product content type in Strapi...
-Creating seed script with 3 sample products...
-Adding strapiProducts collection to content.config.ts...
-Creating listing page at /products and detail page at /products/[slug]...
-
-Done! Restart Strapi, run the seed script, and visit /products.
+Create a community page with a hero section welcoming people, a grid of
+4 benefit cards, links to the Astro and Strapi GitHub repos and Discord
+servers, and a featured workshops section. The workshops should be a
+separate collection at /workshops with title, instructor, skill level,
+duration, date, price, cover image, and learning outcomes. Create 3
+sample workshops.
 ```
+
+The skill determined that this required **both paths**:
+
+1. **Workshops** → collection type with its own API, seed script with 3 sample entries + placeholder images, Astro listing page with skill-level badges and price, and detail pages with learning outcomes
+2. **Community** → a Page entry using existing blocks (`blocks.hero`, `blocks.heading-section`, `blocks.card-grid`) plus two new block components (`blocks.community-links` for external links, `blocks.featured-workshops` referencing the workshop collection). No new Astro page needed — rendered automatically by `[slug]/index.astro`
 
 The skill follows the existing project patterns — same loader config, same Zod schemas, same theme tokens. It adapts the UI layout to fit the content type rather than using a one-size-fits-all template. You can run it multiple times to add as many pages as you need.
 

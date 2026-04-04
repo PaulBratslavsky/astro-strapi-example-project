@@ -99,6 +99,8 @@ Look at the user's requested sections and map each one to existing block compone
 - `blocks.featured-articles` — linked article entries
 - `blocks.newsletter` — heading, text, placeholder, label, formId
 
+**IMPORTANT:** When reusing existing blocks, check that the Zod schema in `content.config.ts` allows optional fields. Media fields (`image`), relation arrays (`links`), and any field that a block can be used without MUST be `.nullable().optional()` in the schema. If they aren't, update the schema — otherwise seeding a block without those fields will cause `InvalidContentEntryDataError`. Also check that the Astro renderer component guards against missing fields (e.g., `{image && (...)}`).
+
 **If a section maps to an existing block, use it.** For example:
 - "community message" → `blocks.hero` or `blocks.content-with-image`
 - "benefit cards" → `blocks.card-grid`
@@ -121,9 +123,11 @@ Look at the user's requested sections and map each one to existing block compone
 
 Create a seed script at `server/scripts/seed-<page-slug>.js` that:
 
-1. Sets public permissions for the page API (`find`, `findOne`) if not already set
-2. Creates a Page entry using the **document service** with the blocks dynamic zone populated
-3. Adds a navigation link to the Global header
+1. **Downloads and uploads placeholder images** for any block that has an image field (hero, content-with-image, etc.). Always include the `downloadImage` and `uploadImage` helpers from the collection seed pattern. Never seed a block without its image — every image-capable block should have a placeholder.
+2. **Deletes any existing page with the same slug** before creating — slugs must be unique, so the seed script should be re-runnable without errors
+3. Sets public permissions for the page API (`find`, `findOne`) if not already set
+4. Creates a Page entry using the **document service** with the blocks dynamic zone populated
+5. Adds a navigation link to the Global header
 
 The seed script creates a Page entry with blocks — example:
 

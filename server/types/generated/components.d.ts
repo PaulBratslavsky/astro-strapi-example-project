@@ -10,6 +10,17 @@ export interface BlocksCardGrid extends Struct.ComponentSchema {
   };
 }
 
+export interface BlocksCommunityLinks extends Struct.ComponentSchema {
+  collectionName: 'components_blocks_community_links';
+  info: {
+    displayName: 'Community Links';
+  };
+  attributes: {
+    heading: Schema.Attribute.String;
+    link: Schema.Attribute.Component<'shared.community-link', true>;
+  };
+}
+
 export interface BlocksContentWithImage extends Struct.ComponentSchema {
   collectionName: 'components_blocks_content_with_images';
   info: {
@@ -41,6 +52,16 @@ export interface BlocksFeaturedArticles extends Struct.ComponentSchema {
   };
   attributes: {
     articles: Schema.Attribute.Relation<'oneToMany', 'api::article.article'>;
+  };
+}
+
+export interface BlocksFeaturedWorkshops extends Struct.ComponentSchema {
+  collectionName: 'components_blocks_featured_workshops';
+  info: {
+    displayName: 'Featured Workshops';
+  };
+  attributes: {
+    workshops: Schema.Attribute.Relation<'oneToMany', 'api::workshop.workshop'>;
   };
 }
 
@@ -158,6 +179,19 @@ export interface SharedCard extends Struct.ComponentSchema {
   };
 }
 
+export interface SharedCommunityLink extends Struct.ComponentSchema {
+  collectionName: 'components_shared_community_links';
+  info: {
+    displayName: 'Community Link';
+  };
+  attributes: {
+    description: Schema.Attribute.Text;
+    href: Schema.Attribute.String;
+    label: Schema.Attribute.String;
+    title: Schema.Attribute.String;
+  };
+}
+
 export interface SharedLink extends Struct.ComponentSchema {
   collectionName: 'components_shared_links';
   info: {
@@ -190,9 +224,11 @@ declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
       'blocks.card-grid': BlocksCardGrid;
+      'blocks.community-links': BlocksCommunityLinks;
       'blocks.content-with-image': BlocksContentWithImage;
       'blocks.faqs': BlocksFaqs;
       'blocks.featured-articles': BlocksFeaturedArticles;
+      'blocks.featured-workshops': BlocksFeaturedWorkshops;
       'blocks.heading-section': BlocksHeadingSection;
       'blocks.hero': BlocksHero;
       'blocks.markdown': BlocksMarkdown;
@@ -202,6 +238,7 @@ declare module '@strapi/strapi' {
       'layout.footer': LayoutFooter;
       'layout.header': LayoutHeader;
       'shared.card': SharedCard;
+      'shared.community-link': SharedCommunityLink;
       'shared.link': SharedLink;
       'shared.logo': SharedLogo;
     }
