@@ -160,9 +160,9 @@ async function downloadImage(url, filepath) {
 
 async function uploadImage(app, filepath, name) {
   const file = {
-    path: filepath,
-    name,
-    type: 'image/jpeg',
+    filepath,
+    originalFilename: name,
+    mimetype: 'image/jpeg',
     size: fs.statSync(filepath).size,
   };
   const [uploaded] = await app.plugin('upload').service('upload').upload({
@@ -318,11 +318,13 @@ Create the page routes. The architecture supports two patterns:
 - **Catch-all dynamic pages** (`[slug]/index.astro`) render any Strapi page via blocks — this is the default for CMS-managed pages.
 - **Custom page overrides** (`<plural-name>/[...page].astro` + `<plural-name>/[slug].astro`) are created for collection types that need a dedicated listing/detail UI.
 
-For a collection type, create custom pages at `client/src/pages/<plural-name>/`:
+For a collection type, create two files at `client/src/pages/<plural-name>/`:
+1. `[...page].astro` — the listing page with pagination
+2. `[slug].astro` — the detail page
 
-**Listing page** at `client/src/pages/<plural-name>/[...page].astro`:
+#### Technical requirements (must follow exactly)
 
-All visible text (headings, labels, empty states) should come from Strapi data where possible. Only use hardcoded text for structural elements (back links, pagination labels).
+**Listing page (`[...page].astro`)** must use this data-loading pattern:
 
 ```astro
 ---
@@ -380,60 +382,9 @@ const items = page.data;
 const currentPage = page.currentPage;
 const totalPages = Math.ceil(page.total / page.size);
 ---
-
-<BaseLayout>
-  <section class="mx-auto max-w-6xl px-6 py-16">
-    <h1 class="text-4xl font-bold tracking-tight text-secondary font-heading">
-      <Display Name Plural>
-    </h1>
-
-    {items.length === 0 && (
-      <p class="mt-10 text-muted">No items available yet. Check back soon.</p>
-    )}
-
-    <div class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-      {items.map((item: CollectionItem) => (
-        <a
-          href={`/<plural-name>/${item.params.slug}`}
-          class="group rounded-xl border border-border bg-surface-raised overflow-hidden transition hover:shadow-lg hover:border-border-hover"
-        >
-          {item.props.data.image && (
-            <div class="overflow-hidden">
-              <StrapiImage
-                class="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-[1.02]"
-                src={item.props.data.image.url}
-                alt={item.props.data.image.alternativeText || ""}
-                height={300}
-                width={400}
-              />
-            </div>
-          )}
-          <div class="p-6">
-            <h2 class="text-lg font-semibold text-secondary group-hover:text-primary-600 transition font-heading">
-              {item.props.data.title}
-            </h2>
-            <p class="mt-2 text-sm text-muted leading-relaxed line-clamp-2">
-              {item.props.data.description}
-            </p>
-            <!-- Render additional custom fields (e.g., price) here -->
-          </div>
-        </a>
-      ))}
-    </div>
-
-    <div class="mt-12">
-      <Pagination
-        previousPage={page.url.prev ? page.url.prev : null}
-        nextPage={page.url.next ? page.url.next : null}
-        currentPage={currentPage}
-        totalPages={totalPages}
-      />
-    </div>
-  </section>
-</BaseLayout>
 ```
 
-**Detail page** at `client/src/pages/<plural-name>/[slug].astro`:
+**Detail page (`[slug].astro`)** must use this data-loading pattern:
 
 ```astro
 ---
@@ -455,42 +406,41 @@ export async function getStaticPaths() {
 }
 
 const { props } = Astro;
-const { title, description, image } = props;
 ---
-
-<BaseLayout>
-  <section class="mx-auto max-w-3xl px-6 py-16">
-    <a
-      href="/<plural-name>"
-      class="inline-flex items-center gap-1 text-sm text-muted hover:text-primary-600 transition"
-    >
-      &larr; Back to <Display Name Plural>
-    </a>
-
-    {image && (
-      <div class="mt-6 overflow-hidden rounded-2xl">
-        <StrapiImage
-          class="w-full aspect-[16/9] object-cover"
-          src={image.url}
-          alt={image.alternativeText || ""}
-          height={600}
-          width={1200}
-        />
-      </div>
-    )}
-
-    <h1 class="mt-8 text-3xl font-bold tracking-tight text-secondary font-heading sm:text-4xl">
-      {title}
-    </h1>
-
-    <p class="mt-6 text-muted leading-relaxed">{description}</p>
-
-    <!-- Render additional custom fields here -->
-  </section>
-</BaseLayout>
 ```
 
-Adapt the templates to include the user's custom fields (images, prices, etc.). Use the existing component patterns (`StrapiImage`, theme tokens, etc.).
+Both pages must:
+- Wrap content in `<BaseLayout>`
+- Use `StrapiImage` for all images (never raw `<img>`)
+- Include `Pagination` on the listing page
+- Use the project's existing Tailwind theme tokens (`text-secondary`, `text-muted`, `text-primary-600`, `bg-surface-raised`, `border-border`, `font-heading`, etc.) — read existing pages to see which tokens are available
+- Always guard media fields with conditional rendering (`{image && (...)}`)
+- Include a back link on the detail page
+
+#### Design approach (do NOT use a generic template)
+
+**Choose the UI layout based on what the content actually is.** Different types of content have different UX conventions that users expect. Study how leading websites present this type of content and design accordingly.
+
+Common UI patterns by content type (use as guidance, not rigid rules):
+
+| Content type | Listing pattern | Detail pattern |
+|---|---|---|
+| **People** (team, staff, speakers) | Centered grid with circular/rounded avatar photos, name + role beneath, short bio. Focus on faces. | Side-by-side layout: photo + name/role on one side, full bio below. Personal and approachable. |
+| **Products / items for sale** | Card grid with rectangular product images, title, price prominent, short description. Commercial feel. | Large product image(s), title + price prominent, full description, specs/details in organized sections. |
+| **Blog / articles** | Featured first post with large image, remaining posts in a compact list. Emphasize publish date and author. | Long-form reading layout, narrow max-width, featured image at top, author byline. |
+| **Services / features** | Icon or illustration-led cards, emphasis on heading + value proposition. May not need images at all. | Focused layout with heading, detailed description, possibly related services. |
+| **Portfolio / gallery** | Masonry or image-dominant grid, minimal text overlay. Visual impact is priority. | Full-width hero image, project details below, image gallery. |
+| **Events** | Date-prominent cards, time/location visible at a glance, clear CTA. | Full event details with date/time/location block, description, registration CTA. |
+| **Locations / offices** | Map-friendly layout or cards with address, phone, hours visible at a glance. | Full address block, map embed placeholder, hours, contact details. |
+| **Testimonials / reviews** | Quote-focused layout with large quote marks, author attribution. May use carousel or stacked layout. | Usually no detail page — testimonials are typically inline. |
+| **FAQ / knowledge base** | Accordion or grouped list by category. Scannable headings. | Expanded answer with related questions. |
+
+**Key design principles:**
+- The layout should feel natural for the content — a team page should look like a team page, not a blog
+- Prioritize the most important field visually (faces for people, images for products, dates for events)
+- Use appropriate image aspect ratios (circular crops for headshots, rectangular for products, wide for articles)
+- Ensure the visual hierarchy matches user expectations for this content type
+- When in doubt, look at 3-4 well-known websites that have this page type and identify the common patterns
 
 ### Step 7: Summary
 
