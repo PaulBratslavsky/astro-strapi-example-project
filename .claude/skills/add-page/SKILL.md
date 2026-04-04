@@ -412,7 +412,7 @@ const { props } = Astro;
 Both pages must:
 - Wrap content in `<BaseLayout>`
 - Use `StrapiImage` for all images (never raw `<img>`)
-- Include `Pagination` on the listing page
+- Include `Pagination` on the listing page, but only render it when `totalPages > 1` — wrap it in `{totalPages > 1 && (...)}`
 - Use the project's existing Tailwind theme tokens (`text-secondary`, `text-muted`, `text-primary-600`, `bg-surface-raised`, `border-border`, `font-heading`, etc.) — read existing pages to see which tokens are available
 - Always guard media fields with conditional rendering (`{image && (...)}`)
 - Include a back link on the detail page

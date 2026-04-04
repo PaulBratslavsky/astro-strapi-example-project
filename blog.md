@@ -425,43 +425,107 @@ Handles absolute URLs (pass through), relative URLs (prepend Strapi base), and d
 
 ## Extending the Project with Claude Code
 
-The starter includes a Claude Code skill that lets you add new pages without manually wiring up Strapi schemas, Astro collections, and page routes.
+The starter includes a [Claude Code skill](https://strapi.io/blog/what-are-agent-skills-and-how-to-use-them) that lets you add new pages without manually wiring up Strapi schemas, Astro collections, and page routes. One command scaffolds the full stack — from database schema to styled frontend.
+
+### Example: Adding an Events Page
+
+We ran `/add-page events` and told Claude we wanted each event to have a name, date, location, cover image, and ticket price with three sample events.
 
 ```
-/add-page products
+> /add-page events
+
+Each event should have: name, date, location, a cover image, and a ticket
+price. Create 3 sample events — a tech conference, a design workshop, and
+a community meetup.
 ```
 
-Claude asks what fields you want, then generates everything — Strapi content type, seed script, Astro collection config, and page templates:
+Here's what the skill generated:
+
+#### Strapi Content Type
+
+A full API structure with schema, controller, routes, and service — all following the existing project patterns:
 
 ```
-> /add-page products
-
-What fields should each product have?
-
-> name, price (number), image, and a short description
-
-Creating product content type in Strapi...
-  server/src/api/product/content-types/product/schema.json
-  server/src/api/product/controllers/product.ts
-  server/src/api/product/routes/product.ts
-  server/src/api/product/services/product.ts
-  server/scripts/seed-product.js
-
-Updating Astro content config...
-  client/src/content.config.ts (added strapiProducts collection)
-
-Creating page templates...
-  client/src/pages/products/[...page].astro
-  client/src/pages/products/[slug].astro
-
-Next steps:
-  1. Restart Strapi: cd server && yarn develop
-  2. Seed the data: cd server && node scripts/seed-product.js
-  3. Restart Astro: cd client && yarn dev
-  4. Visit http://localhost:4321/products
+server/src/api/event/
+├── content-types/event/schema.json
+├── controllers/event.ts
+├── routes/event.ts
+└── services/event.ts
 ```
 
-The generated code matches the rest of the project — same patterns, same styling. The skill lives at `.claude/skills/add-page/SKILL.md` if you want to read or modify it.
+The schema includes `title`, `slug`, `description` as base fields, plus the custom fields: `date` (datetime), `location` (string), `price` (decimal), and `coverImage` (media).
+
+![IMAGE: Screenshot of the Strapi admin panel showing the Event content type with the fields listed — title, slug, description, date, location, price, coverImage](placeholder-strapi-event-content-type.png)
+
+#### Seed Script with Sample Data
+
+A seed script at `server/scripts/seed-event.js` that does four things in one run:
+
+1. **Sets public API permissions** — enables `find` and `findOne` so the Astro frontend can fetch events without authentication
+2. **Downloads and uploads placeholder images** — pulls unique images from picsum.photos and attaches them to each entry via Strapi's upload service
+3. **Creates three realistic entries** — FutureStack 2026 ($299), Design Systems Workshop ($149), and Community Builders Meetup (Free), each with a real date, location, and description
+4. **Adds a navigation link** — updates the Global header's `navItems` so "Events" appears in the site nav automatically
+
+No manual admin panel work needed — `node scripts/seed-event.js` and you have a working page with content.
+
+![IMAGE: Screenshot of the Strapi admin showing the three seeded event entries in the list view — FutureStack 2026, Design Systems Workshop, Community Builders Meetup](placeholder-strapi-event-list.png)
+
+#### Astro Content Collection
+
+The skill updated `client/src/content.config.ts` with a new `strapiEvents` collection, using explicit `fields` and `populate` params to fetch only what the templates need:
+
+```typescript
+const strapiEvents = defineCollection({
+  loader: strapiLoader({
+    contentType: "event",
+    clientConfig,
+    params: {
+      fields: ["title", "slug", "description", "date", "location", "price"],
+      populate: {
+        coverImage: { fields: ["url", "alternativeText"] },
+      },
+    },
+  }),
+  schema: z.object({
+    title: z.string(),
+    slug: z.string(),
+    description: z.string().nullable().optional(),
+    date: z.string().nullable().optional(),
+    location: z.string().nullable().optional(),
+    price: z.number().nullable().optional(),
+    coverImage: imageSchema.nullable().optional(),
+  }),
+});
+```
+
+Note that `price` is typed as `z.number()` (not a string) and all media/optional fields use `.nullable().optional()` — Strapi returns `null` for empty fields, not `undefined`.
+
+#### Event-Specific Page Design
+
+This is where the updated skill really shows its value. Instead of generating a generic card grid (like a blog), it recognized that events have different UX conventions and produced an **event-appropriate layout**:
+
+**Listing page** (`/events`) — Horizontal event cards with a prominent date block (month + day) on the left, a cover image thumbnail, event details (title, location icon, time icon) in the middle, and a price badge on the right. Free events get a green "Free" badge.
+
+![IMAGE: Screenshot of the events listing page showing the three events in horizontal card layout with date blocks, location pins, and price badges](placeholder-events-listing.png)
+
+**Detail page** (`/events/[slug]`) — Cover image hero at the top, followed by a structured info block with calendar, map pin, and price icons showing the date, location, and cost at a glance, then the full description below.
+
+![IMAGE: Screenshot of the FutureStack 2026 event detail page showing the cover image, date/location/price info block, and description](placeholder-event-detail.png)
+
+Compare this to a blog listing (featured post + compact list) or a team page (centered circular headshots) — the skill adapts the design to match what users expect for each content type, not a one-size-fits-all template.
+
+### What the Skill Actually Does
+
+Under the hood, the `/add-page` skill is a markdown file at `.claude/skills/add-page/SKILL.md` that instructs Claude Code to:
+
+1. **Ask** what fields the page needs (or use sensible defaults)
+2. **Read** the existing project code to match patterns exactly
+3. **Create** the Strapi content type (schema + controller + routes + service)
+4. **Write** a seed script that handles permissions, image uploads, sample data, and navigation — all via Strapi's programmatic API
+5. **Update** the Astro content collection config with proper populate params and Zod schemas
+6. **Design** listing and detail pages with UI patterns appropriate for the content type
+
+It's not a rigid code generator — it's a set of instructions that Claude interprets based on what you're building. The same skill produces circular avatar grids for team pages, date-prominent cards for events, and product cards with prices for e-commerce. You can modify the skill file to add your own patterns or change the defaults.
 
 For a deeper look at what agent skills are and how to build your own, check out [What Are Agent Skills and How to Use Them](https://strapi.io/blog/what-are-agent-skills-and-how-to-use-them).
 
