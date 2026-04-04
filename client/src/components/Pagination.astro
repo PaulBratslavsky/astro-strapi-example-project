@@ -1,12 +1,4 @@
 ---
-// used this as reference: https://github.com/incluud/accessible-astro-components/blob/main/Pagination.astro
-/**
- * Pagination Component
- *
- * @description A fully accessible pagination component with first/last and previous/next navigation
- */
-
-// Pagination Props type helpers
 export type NumericalString = `${number}`
 export type RouteString = string | null | undefined
 
@@ -17,8 +9,6 @@ interface Props {
   totalPages: number
   class?: string
   ariaLabel?: string
-  previousPageLabel?: string
-  nextPageLabel?: string
 }
 
 const {
@@ -31,59 +21,38 @@ const {
 } = Astro.props
 ---
 
-<nav class:list={['pagination', className]} aria-label={ariaLabel}>
-  <ul class="flex items-center gap-4 list-none m-0 p-0">
-    <li>
-      <a id="previousPageButton" href={previousPage} aria-label="Go to previous page (page {currentPage - 1})" class={`pagination-button ${currentPage === 1 ? 'cursor-not-allowed' : ''}`} aria-disabled={currentPage === 1}>
-        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="32" height="32" viewBox="0 0 24 24">
-          <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14 7-5 5 5 5"/>
-        </svg>
-      </a>
-    </li>
-    <li>
-      <span id="progress" class="text-center">Page {currentPage} of {totalPages}</span>
-    </li>
-    <li>
-      <a id="nextPageButton" href={nextPage} aria-label="Go to next page (page {currentPage + 1})" class={`pagination-button ${currentPage === totalPages ? 'cursor-not-allowed' : ''}`} aria-disabled={currentPage === totalPages}>
-        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="32" height="32" viewBox="0 0 24 24">
-          <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m10 7 5 5-5 5"/>
-        </svg>
-      </a>
-    </li>
-  </ul>
+<nav class:list={['flex items-center justify-center gap-2', className]} aria-label={ariaLabel}>
+  <a
+    href={previousPage}
+    aria-label={`Go to previous page (page ${currentPage - 1})`}
+    aria-disabled={currentPage === 1}
+    class={`inline-flex items-center justify-center rounded-button border p-2 transition ${
+      currentPage === 1
+        ? 'border-border text-faint cursor-not-allowed pointer-events-none'
+        : 'border-border text-muted hover:border-border-hover hover:text-secondary'
+    }`}
+  >
+    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+    </svg>
+  </a>
+
+  <span class="px-3 text-sm text-muted">
+    Page <span class="font-semibold text-secondary">{currentPage}</span> of {totalPages}
+  </span>
+
+  <a
+    href={nextPage}
+    aria-label={`Go to next page (page ${currentPage + 1})`}
+    aria-disabled={currentPage === totalPages}
+    class={`inline-flex items-center justify-center rounded-button border p-2 transition ${
+      currentPage === totalPages
+        ? 'border-border text-faint cursor-not-allowed pointer-events-none'
+        : 'border-border text-muted hover:border-border-hover hover:text-secondary'
+    }`}
+  >
+    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+    </svg>
+  </a>
 </nav>
-
-<style>
-  .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .pagination-button {
-    display: flex;
-    justify-content: center;
-    border: 2px solid transparent;
-    border-radius: 0.25rem;
-    width: 2.5rem; /* 10 units */
-    height: 2.5rem; /* 10 units */
-    background-color: #28a745; /* bg-green-500 */
-    color: #fff;
-    transition: background-color 0.2s;
-  }
-
-  .pagination-button:hover {
-    background-color: #218838; /* hover:bg-green-600 */
-  }
-
-  .pagination-button.cursor-not-allowed {
-    background-color: #d4edda; /* bg-light-green-500 */
-    cursor: not-allowed;
-  }
-
-  .pagination button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-</style>

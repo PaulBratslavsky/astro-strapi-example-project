@@ -1,1 +1,51 @@
 @import "tailwindcss";
+
+@theme {
+  /* Brand / primary — green */
+  --color-primary-50: oklch(0.97 0.02 155);
+  --color-primary-100: oklch(0.93 0.04 155);
+  --color-primary-500: oklch(0.62 0.17 155);
+  --color-primary-600: oklch(0.55 0.16 155);
+  --color-primary-700: oklch(0.48 0.14 155);
+  --color-primary-900: oklch(0.30 0.10 155);
+
+  /* Neutral surface palette */
+  --color-surface: oklch(0.99 0 0);
+  --color-surface-alt: oklch(0.97 0.005 260);
+  --color-surface-raised: oklch(1 0 0);
+
+  /* Content / prose */
+  --color-secondary: oklch(0.30 0.01 260);
+  --color-muted: oklch(0.55 0.01 260);
+  --color-faint: oklch(0.72 0.01 260);
+
+  /* Borders */
+  --color-border: oklch(0.90 0.005 260);
+  --color-border-hover: oklch(0.82 0.01 260);
+
+  /* Fonts — uses Astro's Fonts API (see astro.config.mjs) */
+  --font-heading: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
+
+  /* Radii */
+  --radius-card: 1rem;
+  --radius-button: 0.5rem;
+}
+
+/* Smooth defaults */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-secondary);
+  background: var(--color-surface);
+}
+
+::selection {
+  background: var(--color-primary-100);
+  color: var(--color-primary-900);
+}

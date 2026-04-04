@@ -9,35 +9,47 @@ interface Props {
 const {
   data: { heading, text, image, links },
 } = Astro.props;
-
-
 ---
 
-<section class="relative overflow-hidden">
-  <div class="relative bg-gray-50 pt-12 lg:pt-20 pb-12 md:pb-24">
-    <div class="container mx-auto px-4">
-      <div class="flex flex-wrap -mx-4">
-        <div class="w-full lg:w-1/2 px-4 mb-12 md:mb-20 lg:mb-0 flex items-center">
-          <div class="w-full text-center lg:text-left">
-            <div class="max-w-md mx-auto lg:mx-0">
-              <h2 class="mb-3 text-4xl lg:text-5xl font-bold font-heading">
-                <span>{heading}</span>
-              </h2>
-            </div>
-            <div class="max-w-sm mx-auto lg:mx-0">
-              <p class="mb-6 text-gray-400 leading-loose">{text}</p>
-              { links && links.map((link) => {
-                const isPrimary = link.type === "PRIMARY" ? "bg-green-600 hover:bg-green-700 text-white" : "bg-white hover:bg-gray-50 text-black";
-                return <a class={`inline-block mb-3 lg:mb-0 lg:mr-3 w-full lg:w-auto py-2 px-6 leading-loose ${isPrimary} font-semibold rounded-l-xl rounded-t-xl transition duration-200`} href={link.href} target={link.isExternal ? "_blank" : "_self"}>{link.label}</a>
-              })}       
-            </div>
+<section class="overflow-hidden bg-surface">
+  <div class="mx-auto max-w-6xl px-6 py-20 lg:py-28">
+    <div class="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
+      <div class="flex-1 text-center lg:text-left">
+        <h1 class="text-4xl font-bold tracking-tight text-secondary sm:text-5xl lg:text-6xl font-heading leading-[1.1]">
+          {heading}
+        </h1>
+        <p class="mt-6 text-lg leading-relaxed text-muted max-w-lg mx-auto lg:mx-0">
+          {text}
+        </p>
+        {links && (
+          <div class="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
+            {links.map((link) => {
+              const isPrimary = link.type === "PRIMARY";
+              return (
+                <a
+                  class={`inline-flex items-center rounded-button px-5 py-2.5 text-sm font-semibold transition ${
+                    isPrimary
+                      ? 'bg-primary-600 text-white shadow-sm hover:bg-primary-700'
+                      : 'border border-border bg-surface-raised text-secondary hover:border-border-hover hover:bg-surface-alt'
+                  }`}
+                  href={link.href}
+                  target={link.isExternal ? "_blank" : "_self"}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
           </div>
-        </div>
-        <div class="w-full lg:w-1/2 px-4 flex items-center justify-center">
-          <div class="relative" style="z-index: 0;">
-            <StrapiImage src={image.url} alt={image.alternativeText} height={600} width={800} class="h-128 w-full max-w-lg object-cover rounded-3xl md:rounded-br-none" />
-          </div>
-        </div>
+        )}
+      </div>
+      <div class="flex-1">
+        <StrapiImage
+          src={image.url}
+          alt={image.alternativeText}
+          height={600}
+          width={800}
+          class="w-full rounded-2xl object-cover shadow-lg"
+        />
       </div>
     </div>
   </div>

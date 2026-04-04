@@ -3,25 +3,17 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout>
-  <section class="py-20 bg-gray-50">
-    <div class="container mx-auto px-4">
-      <div class="max-w-xl mx-auto">
-        <div class="py-12 px-6 bg-white rounded shadow">
-          <div class="text-center">
-            <span class="mb-6 text-4xl text-green-600 font-bold">Whoops!</span>
-            <h3 class="mb-2 text-4xl font-bold">Something went wrong!</h3>
-            <p class="mb-8 text-gray-400">
-              Sorry, but we are unable to open this page
-            </p>
-            <div>
-              <a
-                class="w-full lg:w-auto mb-2 lg:mb-0 lg:mr-4 inline-block py-2 px-6 rounded-l-xl rounded-t-xl font-bold leading-loose text-gray-50 bg-green-600 hover:bg-green-700"
-                href="/">Go back to Homepage</a
-              >
-            </div>
-          </div>
-        </div>
-      </div>
+  <section class="flex items-center justify-center py-32">
+    <div class="mx-auto max-w-md px-6 text-center">
+      <p class="text-6xl font-bold text-primary-600 font-heading">404</p>
+      <h1 class="mt-4 text-2xl font-bold text-secondary">Page not found</h1>
+      <p class="mt-2 text-muted">Sorry, we couldn't find the page you're looking for.</p>
+      <a
+        class="mt-8 inline-flex items-center rounded-button bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition"
+        href="/"
+      >
+        Back to homepage
+      </a>
     </div>
   </section>
 </BaseLayout>

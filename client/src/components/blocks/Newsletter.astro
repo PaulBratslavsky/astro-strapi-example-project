@@ -10,35 +10,24 @@ const {
 } = Astro.props;
 ---
 
-<section class="max-w-6xl mx-auto bg-white rounded-2xl">
-  <div class="py-20">
-    <div class="container mx-auto px-4">
-      <div class="flex flex-wrap items-center">
-        <div
-          class="mb-6 w-full lg:w-auto max-w-lg mx-auto lg:ml-6 mr-auto text-center lg:text-left"
+<section>
+  <div class="mx-auto max-w-6xl px-6 py-20">
+    <div class="rounded-2xl bg-primary-50 px-8 py-14 text-center sm:px-16">
+      <h2 class="text-2xl font-bold tracking-tight text-secondary sm:text-3xl font-heading">{heading}</h2>
+      <p class="mt-3 text-muted">{text}</p>
+      <form class="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+        <input
+          class="w-full rounded-button border border-border bg-surface-raised px-4 py-2.5 text-sm text-secondary placeholder:text-faint focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100 sm:w-72"
+          type="email"
+          placeholder={placeholder}
+        />
+        <button
+          class="w-full rounded-button bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition sm:w-auto"
+          type="submit"
         >
-          <h2 class="text-4xl font-bold mb-2">{heading}</h2>
-          <p class="text-gray-400">{text}</p>
-        </div>
-        <div class="w-full lg:w-2/5">
-          <form action="">
-            <div
-              class="max-w-md lg:max-w-sm mx-auto flex flex-wrap items-center"
-            >
-              <input
-                class="outline-1 outline-gray-200 bg-white flex-grow py-3 px-4 mr-4 text-xs rounded leading-loose"
-                type="email"
-                placeholder={placeholder}
-              />
-              <button
-                class="flex-none py-2 px-6 rounded-t-xl rounded-l-xl bg-green-600 hover:bg-green-700 text-gray-50 font-bold leading-loose transition duration-200"
-              >
-                {label}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+          {label}
+        </button>
+      </form>
     </div>
   </div>
 </section>

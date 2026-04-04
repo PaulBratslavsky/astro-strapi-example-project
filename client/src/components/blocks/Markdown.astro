@@ -9,198 +9,80 @@ const { data: { content } } = Astro.props;
 const html = marked(content);
 ---
 
+<article class="prose mx-auto max-w-3xl px-6 mb-12" set:html={html} />
 
-<article class="max-w-2xl mx-auto mb-6 leading-loose text-gray-500 rich-text" set:html={html} />
-
-
-
-<style is:global>  
-  /******************************************* 
-  Rich Text Styles
-  *******************************************/
- 
-  /* Headers */
-  article.rich-text h1 {
-    font-size: 2.25rem; /* text-4xl */
-    font-weight: bold;
-    margin-bottom: 2rem; /* mb-8 */
-    color: var(--color-secondary);
+<style is:global>
+  .prose {
+    color: var(--color-muted);
+    line-height: 1.75;
+    font-size: 1.125rem;
   }
 
-  article.rich-text h2 {
-    font-size: 1.875rem; /* text-3xl */
-    font-weight: bold;
-    margin-bottom: 2rem; /* mb-8 */
-    color: var(--color-secondary);
-  }
+  .prose h1 { font-size: 2.25rem; font-weight: 700; margin: 2.5rem 0 1rem; color: var(--color-secondary); letter-spacing: -0.025em; }
+  .prose h2 { font-size: 1.75rem; font-weight: 700; margin: 2rem 0 0.75rem; color: var(--color-secondary); letter-spacing: -0.025em; }
+  .prose h3 { font-size: 1.375rem; font-weight: 600; margin: 1.75rem 0 0.5rem; color: var(--color-secondary); }
+  .prose h4 { font-size: 1.125rem; font-weight: 600; margin: 1.5rem 0 0.5rem; color: var(--color-secondary); }
+  .prose h5, .prose h6 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.5rem; color: var(--color-secondary); }
 
-  article.rich-text h3 {
-    font-size: 1.5rem; /* text-2xl */
-    font-weight: bold;
-    margin-bottom: 1.5rem; /* mb-6 */
-    color: var(--color-secondary);
-  }
+  .prose p { margin-bottom: 1.5rem; }
 
-  article.rich-text h4 {
-    font-size: 1.25rem; /* text-xl */
-    font-weight: bold;
-    margin-bottom: 1rem; /* mb-4 */
-    color: var(--color-secondary);
-  }
-
-  article.rich-text h5 {
-    font-size: 1.125rem; /* text-lg */
-    font-weight: bold;
-    margin-bottom: 1rem; /* mb-4 */
-    color: var(--color-secondary);
-  }
-
-  article.rich-text h6 {
-    font-size: 1rem; /* text-base */
-    font-weight: bold;
-    margin-bottom: 1rem; /* mb-4 */
-    color: var(--color-secondary);
-  }
-
-  /* Horizontal rules */
-  article.rich-text hr {
-    color: var(--color-secondary);
-    margin: 2rem 0; /* my-8 */
-  }
-
-  article.rich-text a {
-    color: #1a202c; /* text-gray-900 */
+  .prose a {
+    color: var(--color-primary-600);
     text-decoration: underline;
-    font-size: 1.25rem; /* text-xl */
-    line-height: 1.625; /* leading-relaxed */
+    text-underline-offset: 2px;
   }
+  .prose a:hover { color: var(--color-primary-700); }
 
-  /* Typographic replacements */
-  article.rich-text p {
-    margin-bottom: 2rem; /* mb-8 */
-    font-size: 1.25rem; /* text-xl */
-    line-height: 1.625; /* leading-relaxed */
-    color: var(--color-secondary);
-  }
+  .prose strong { font-weight: 600; color: var(--color-secondary); }
+  .prose em { font-style: italic; }
+  .prose del { text-decoration: line-through; }
 
-  /* Emphasis */
-  article.rich-text strong {
-    font-weight: bold;
-    font-size: 1.25rem; /* text-xl */
-    line-height: 1.625; /* leading-relaxed */
-  }
-
-  article.rich-text em {
+  .prose blockquote {
+    border-left: 3px solid var(--color-primary-500);
+    padding: 0.75rem 1.25rem;
+    margin: 1.5rem 0;
+    background: var(--color-surface-alt);
+    border-radius: 0 0.5rem 0.5rem 0;
     font-style: italic;
-    font-size: 1.25rem; /* text-xl */
-    line-height: 1.625; /* leading-relaxed */
+    color: var(--color-muted);
   }
 
-  article.rich-text del {
-    text-decoration: line-through;
-    font-size: 1.25rem; /* text-xl */
-    line-height: 1.625; /* leading-relaxed */
+  .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; }
+  .prose ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1.5rem; }
+  .prose li { margin-bottom: 0.5rem; }
+  .prose li > ul { list-style-type: disc; padding-left: 1.25rem; margin: 0.5rem 0; }
+  .prose li > ol { list-style-type: decimal; padding-left: 1.25rem; margin: 0.5rem 0; }
+
+  .prose hr { border: none; border-top: 1px solid var(--color-border); margin: 2.5rem 0; }
+
+  .prose pre {
+    background: var(--color-secondary);
+    color: var(--color-surface);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    font-size: 0.875rem;
+    line-height: 1.7;
   }
 
-  /* Blockquotes */
-  article.rich-text blockquote {
-    border-left: 4px solid #cbd5e0; /* border-gray-400 */
-    padding-left: 1rem; /* pl-4 */
-    padding-top: 0.5rem; /* py-2 */
-    padding-bottom: 0.5rem; /* py-2 */
-    margin-bottom: 1rem; /* mb-4 */
+  .prose code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.875em;
   }
 
-  /* Lists */
-  article.rich-text ul {
-    list-style-type: disc;
-    padding-left: 1rem; /* pl-4 */
-    margin-bottom: 1rem; /* mb-4 */
+  .prose :not(pre) > code {
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    border-radius: 0.375rem;
+    padding: 0.125rem 0.375rem;
     color: var(--color-secondary);
   }
 
-  article.rich-text ol {
-    list-style-type: decimal;
-    padding-left: 1rem; /* pl-4 */
-    margin-bottom: 1rem; /* mb-4 */
-    color: var(--color-secondary);
-  }
+  .prose table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.875rem; }
+  .prose th { text-align: left; padding: 0.75rem 1rem; font-weight: 600; color: var(--color-secondary); border-bottom: 2px solid var(--color-border); }
+  .prose td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border); }
+  .prose tr:hover td { background: var(--color-surface-alt); }
 
-  article.rich-text li {
-    margin-bottom: 0.5rem; /* mb-2 */
-    color: var(--color-secondary);
-  }
-
-  article.rich-text li > ul {
-    list-style-type: disc;
-    padding-left: 1rem; /* pl-4 */
-    margin-bottom: 0.5rem; /* mb-2 */
-  }
-
-  article.rich-text li > ol {
-    list-style-type: decimal;
-    padding-left: 1rem; /* pl-4 */
-    margin-bottom: 0.5rem; /* mb-2 */
-  }
-
-  /* Code blocks */
-  article.rich-text pre {
-    font-family: monospace;
-    color: var(--color-secondary);
-    border-radius: 0.375rem; /* rounded */
-    padding: 1rem; /* p-4 */
-    margin: 1.5rem 0; /* my-6 */
-  }
-
-  article.rich-text code {
-    font-family: monospace;
-    color: var(--color-secondary);
-    border-radius: 0.375rem; /* rounded */
-    padding: 0.5rem 0.5rem; /* px-2 py-1 */
-  }
-
-  /* Tables */
-  article.rich-text table {
-    width: 100%;
-    border-collapse: collapse;
-    color: var(--color-secondary);
-    margin: 1.5rem 0; /* my-6 */
-  }
-
-  article.rich-text th {
-    color: var(--color-secondary);
-    text-align: left;
-    padding: 0.5rem 1rem; /* py-2 px-4 */
-    font-weight: 600; /* font-semibold */
-    border-bottom: 1px solid var(--color-secondary);
-  }
-
-  article.rich-text td {
-    padding: 0.5rem 1rem; /* py-2 px-4 */
-    border-bottom: 1px solid var(--color-secondary);
-  }
-
-  /* Images */
-  article.rich-text img {
-    width: 100%;
-    object-fit: cover;
-    border-radius: 0.75rem; /* rounded-xl */
-    margin: 1.5rem 0; /* my-6 */
-  }
-
-  /* Custom containers */
-  article.rich-text .warning {
-    background-color: #fefcbf; /* bg-yellow-100 */
-    border: 1px solid #fbbf24; /* border-yellow-500 */
-    color: #7a7d00; /* text-yellow-700 */
-    padding: 0.5rem 1rem; /* px-4 py-2 */
-    border-radius: 0.5rem; /* rounded-lg */
-    margin-bottom: 1rem; /* mb-4 */
-  }
-
-  /* Custom styles for the Markdown component */
-  .custom-markdown {
-    /* Add any additional styles here if needed */
-  }
-
+  .prose img { width: 100%; object-fit: cover; border-radius: 1rem; margin: 2rem 0; }
 </style>

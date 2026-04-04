@@ -13,66 +13,51 @@ const {
 const currentYear = new Date().getFullYear();
 ---
 
-<section>
-  <div class="py-20 mt-20 bg-gray-100">
-    <div class="container mx-auto px-4">
-      <div
-        class="pb-12 flex flex-wrap items-center justify-between border-b border-gray-100"
-      >
-        <div class="w-full lg:w-1/5 mb-12 lg:mb-4">
-          <a
-            class="inline-block text-3xl font-bold leading-none"
-            href={logo.logoLink}
-          >
-            <StrapiImage
-              src={logo.image.url}
-              alt={logo.image.alternativeText}
-              height={40}
-              width={40}
-            />
-          </a>
+<footer class="border-t border-border bg-surface-alt">
+  <div class="mx-auto max-w-6xl px-6 py-16">
+    <div class="flex flex-col gap-10 md:flex-row md:items-center md:justify-between">
+      <a class="flex items-center gap-2 font-heading text-lg font-bold" href={logo.logoLink}>
+        <StrapiImage
+          src={logo.image.url}
+          alt={logo.image.alternativeText}
+          height={32}
+          width={32}
+          class="rounded-lg"
+        />
+      </a>
+      <nav>
+        <ul class="flex flex-wrap gap-x-6 gap-y-2">
+          {navItems && navItems.map((item) => (
+            <li>
+              <a class="text-sm text-muted hover:text-secondary transition" href={item.href}>
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+
+    <div class="mt-10 flex flex-col gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-sm text-faint">&copy; {currentYear}. {text}</p>
+      {socialLinks && (
+        <div class="flex gap-2">
+          {socialLinks.map((item) => (
+            <a
+              class="rounded-lg p-2 text-muted hover:bg-surface-raised hover:text-secondary transition"
+              href={item.logoLink}
+              aria-label={item.logoText}
+            >
+              <StrapiImage
+                src={item.image.url}
+                alt={item.image.alternativeText}
+                height={18}
+                width={18}
+              />
+            </a>
+          ))}
         </div>
-        <div class="w-full lg:w-auto">
-          <ul class="flex flex-wrap lg:space-x-5 items-center">
-            {
-              navItems &&
-                navItems.map((item) => (
-                  <li class="w-full md:w-auto mb-2 md:mb-0">
-                    <a
-                      class="lg:text-sm text-gray-400 hover:text-gray-500"
-                      href={item.href}
-                    >
-                      {item.label}
-                    </a>
-                  </li>
-                ))
-            }
-          </ul>
-        </div>
-      </div>
-      <div class="mt-8 flex flex-wrap justify-between items-center">
-        <p class="order-last text-sm text-gray-400">
-          &copy; {currentYear}. {text}
-        </p>
-        <div class="mb-4 lg:mb-0 order-first lg:order-last">
-          {
-            socialLinks &&
-              socialLinks.map((item) => (
-                <a
-                  class="inline-block mr-2 p-2 bg-gray-50 hover:bg-gray-100 rounded"
-                  href={item.logoLink}
-                >
-                  <StrapiImage
-                    src={item.image.url}
-                    alt={item.image.alternativeText}
-                    height={20}
-                    width={20}
-                  />
-                </a>
-              ))
-          }
-        </div>
-      </div>
+      )}
     </div>
   </div>
-</section>
+</footer>

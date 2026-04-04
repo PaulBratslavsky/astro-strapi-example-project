@@ -7,7 +7,6 @@ import { getCollection } from 'astro:content';
 
 import type { CollectionEntry } from "astro:content";
 
-// Use with Astro's collection entry type
 type Post = CollectionEntry<"strapiPosts">;
 
 type CollectionArticle = {
@@ -30,74 +29,57 @@ export async function getStaticPaths() {
 
 const { props } = Astro;
 const { featuredImage, author, contentTags, blocks, title, content } = props;
-
 ---
 
 <BaseLayout>
-  <section class="my-6">
-    <div class="container mx-auto">
-      <div>
-        {
-          featuredImage && (
-            <StrapiImage
-              class="w-full h-80 object-cover rounded-lg"
-              src={featuredImage.url}
-              alt={featuredImage?.alternativeText}
-              height={600}
-              width={800}
-            />
-          )
-        }
+  <article>
+    {featuredImage && (
+      <div class="mx-auto max-w-5xl px-6 pt-8">
+        <StrapiImage
+          class="w-full h-72 sm:h-96 object-cover rounded-2xl"
+          src={featuredImage.url}
+          alt={featuredImage?.alternativeText}
+          height={600}
+          width={1200}
+        />
       </div>
-      <div class="py-14 max-w-2xl mx-auto text-center">
-        {
-          contentTags && contentTags.length > 0 && contentTags.map((tag: any) => (
-            <span class="uppercase text-base lg:text-xl text-green-600 hover:text-green-700 hover:underline">
+    )}
+
+    <div class="mx-auto max-w-3xl px-6 py-12 text-center">
+      {contentTags && contentTags.length > 0 && (
+        <div class="mb-4 flex flex-wrap justify-center gap-2">
+          {contentTags.map((tag: any) => (
+            <span class="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
               {tag.title}
             </span>
-          ))
-        }
-
-        <span
-          class="uppercase text-base lg:text-xl text-green-600 hover:text-green-700 hover:underline"
-        >
-        </span>
-        <div class="mt-2">
-          <h2 class="mb-6 text-4xl lg:text-5xl font-bold font-heading">
-            {title}
-          </h2>
-          {
-            author?.image && (
-              <div class="flex justify-center">
-                <div class="mr-4">
-              <StrapiImage
-                src={author.image.url}
-                alt={author.image.alternativeText}
-                height={100}
-                width={100}
-                class="w-12 h-12 object-cover object-top rounded-3xl"
-
-              />
-            </div>
-            <div class="text-left">
-              <span>
-                <h3
-                  class="text-gray-500 hover:text-gray-600 hover:underline font-bold"
-                >
-                  {author.fullName}
-                </h3>
-              </span>
-              <span>
-                <span class="text-xs text-green-600 font-bold">Author</span>
-              </span>
-                </div>
-              </div>
-            )
-          }
+          ))}
         </div>
-      </div>
-      { content && <Markdown data={{ content: content, __component: "blocks.markdown" }} />} 
+      )}
+
+      <h1 class="text-3xl font-bold tracking-tight text-secondary sm:text-4xl lg:text-5xl font-heading">
+        {title}
+      </h1>
+
+      {author && (
+        <div class="mt-6 flex items-center justify-center gap-3">
+          {author.image && (
+            <StrapiImage
+              src={author.image.url}
+              alt={author.image.alternativeText}
+              height={48}
+              width={48}
+              class="h-10 w-10 rounded-full object-cover"
+            />
+          )}
+          <div class="text-left">
+            <p class="text-sm font-semibold text-secondary">{author.fullName}</p>
+            <p class="text-xs text-faint">Author</p>
+          </div>
+        </div>
+      )}
     </div>
-  </section>
+
+    {content && <Markdown data={{ content: content, __component: "blocks.markdown" }} />}
+  </article>
   <BlockRenderer blocks={blocks} />
 </BaseLayout>

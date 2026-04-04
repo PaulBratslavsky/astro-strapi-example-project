@@ -9,17 +9,12 @@ interface Props {
 const { data: { faq } } = Astro.props;
 ---
 
-
 <section>
-  <div class="py-20 bg-gray-50">
-    <div class="container mx-auto px-4">
-      <div class="max-w-3xl mx-auto">
-        <ul class="space-y-4 lg:space-y-6">
-          {faq.map(faq => (
-            <Faq question={faq.heading} answer={faq.text} />
-          ))}
-        </ul>
-      </div>
-    </div>
+  <div class="mx-auto max-w-3xl px-6 py-16">
+    <ul class="space-y-3">
+      {faq.map(faq => (
+        <Faq question={faq.heading} answer={faq.text} />
+      ))}
+    </ul>
   </div>
 </section>

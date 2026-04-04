@@ -22,37 +22,28 @@ if (!isVisible) return null;
 
 <div
   id="banner"
-  class="flex items-center gap-x-6 bg-green-900 px-6 py-2.5 sm:px-3.5 sm:before:flex-1 sticky top-0 z-50"
+  class="flex items-center justify-center gap-x-4 bg-primary-900 px-6 py-2 text-sm text-white/90"
 >
-  <p class="text-sm/6 text-white">
-    <a href={link.href} target={link?.isExternal ? "_blank" : "_self"}>
-      <strong class="font-semibold">{link.label}</strong><svg
-        viewBox="0 0 2 2"
-        class="mx-2 inline size-0.5 fill-current"
-        aria-hidden="true"><circle cx="1" cy="1" r="1"></circle></svg
-      >{description}&nbsp;<span aria-hidden="true">&rarr;</span>
+  <p>
+    <a href={link.href} target={link?.isExternal ? "_blank" : "_self"} class="inline-flex items-center gap-2 hover:text-white transition">
+      <strong class="font-semibold">{link.label}</strong>
+      <span class="text-white/60">&mdash;</span>
+      <span>{description}</span>
+      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+      </svg>
     </a>
   </p>
-  <div class="flex flex-1 justify-end">
-    <button
-      id="dismiss-button"
-      type="button"
-      class="-m-3 p-3 focus-visible:outline-offset-[-4px]"
-    >
-      <span class="sr-only">Dismiss</span>
-      <svg
-        class="size-5 text-white"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        aria-hidden="true"
-        data-slot="icon"
-      >
-        <path
-          d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"
-        ></path>
-      </svg>
-    </button>
-  </div>
+  <button
+    id="dismiss-button"
+    type="button"
+    class="rounded p-1 text-white/60 hover:text-white transition"
+    aria-label="Dismiss"
+  >
+    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+      <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+    </svg>
+  </button>
 </div>
 
 <script>

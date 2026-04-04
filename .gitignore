@@ -117,6 +117,12 @@ yarn-error.log
 coverage
 
 ############################
+# Local plugin development
+############################
+
+strapi-community-astro-loader
+
+############################
 # Strapi
 ############################
 

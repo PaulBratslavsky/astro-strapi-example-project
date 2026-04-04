@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { Font } from "astro:assets";
 import { getGlobalPageData } from "../utils/loaders";
 
 import Header from "../components/Header.astro";
@@ -16,20 +17,17 @@ const { header, banner, footer } = data;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <Font cssVariable="--font-roboto" preload />
     <meta name="generator" content={Astro.generator} />
-    <title>Astro Basics</title>
-    <meta name="description" content="Astro Basics" />
+    <title>Astro + Strapi</title>
+    <meta name="description" content="A modern Astro and Strapi example project" />
   </head>
-  <body class="bg-gray-50">
+  <body class="min-h-screen flex flex-col">
     { banner && <Banner data={banner} /> }
     <Header data={header} />
-    <main class="container mx-auto my-0">
+    <main class="flex-1">
       <slot />
     </main>
     { footer && <Footer data={footer} /> }
   </body>
 </html>
-<style>
-  html,
-
-</style>

@@ -1,5 +1,5 @@
 export function getStrapiURL() {
-  return import.meta.env.VITE_STRAPI_BASE_URL ?? "http://localhost:1337";
+  return import.meta.env.STRAPI_BASE_URL ?? "http://localhost:1337";
 }
 
 export function getStrapiMedia(url: string | null) {

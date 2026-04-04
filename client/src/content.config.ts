@@ -1,99 +1,260 @@
-import type { Loader } from "astro/loaders";
-import { defineCollection } from "astro:content";
+import { defineCollection, z } from "astro:content";
 import { strapiLoader } from "strapi-community-astro-loader";
+
+const clientConfig = {
+  baseURL: import.meta.env.STRAPI_BASE_URL || "http://localhost:1337/api",
+};
+
+// ── Reusable schemas ──
+
+const imageSchema = z.object({
+  id: z.number().optional(),
+  documentId: z.string().optional(),
+  url: z.string(),
+  alternativeText: z.string().nullable().optional(),
+});
+
+const linkSchema = z.object({
+  href: z.string(),
+  label: z.string().optional(),
+  isExternal: z.boolean().optional(),
+  isButtonLink: z.boolean().optional(),
+  type: z.enum(["PRIMARY", "SECONDARY"]).optional(),
+});
+
+const blockBase = {
+  id: z.number().optional(),
+  __component: z.string(),
+  documentId: z.string().optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  publishedAt: z.string().optional(),
+};
+
+// ── Block schemas ──
+
+const blockSchema = z.discriminatedUnion("__component", [
+  z.object({
+    ...blockBase,
+    __component: z.literal("blocks.hero"),
+    heading: z.string(),
+    text: z.string(),
+    image: imageSchema,
+    links: z.array(linkSchema),
+  }),
+  z.object({
+    ...blockBase,
+    __component: z.literal("blocks.heading-section"),
+    heading: z.string(),
+    subHeading: z.string(),
+    anchorLink: z.string().nullable().optional(),
+  }),
+  z.object({
+    ...blockBase,
+    __component: z.literal("blocks.card-grid"),
+    card: z.array(
+      z.object({
+        id: z.number().optional(),
+        heading: z.string(),
+        text: z.string(),
+        image: imageSchema.optional(),
+      })
+    ),
+  }),
+  z.object({
+    ...blockBase,
+    __component: z.literal("blocks.content-with-image"),
+    heading: z.string(),
+    text: z.string(),
+    image: imageSchema,
+    link: linkSchema,
+    reversed: z.boolean().optional(),
+  }),
+  z.object({
+    ...blockBase,
+    __component: z.literal("blocks.faqs"),
+    faq: z.array(
+      z.object({
+        heading: z.string(),
+        text: z.string(),
+      })
+    ),
+  }),
+  z.object({
+    ...blockBase,
+    __component: z.literal("blocks.person-card"),
+    personName: z.string(),
+    personJob: z.string(),
+    image: imageSchema.optional(),
+    text: z.string(),
+  }),
+  z.object({
+    ...blockBase,
+    __component: z.literal("blocks.markdown"),
+    content: z.string(),
+  }),
+  z.object({
+    ...blockBase,
+    __component: z.literal("blocks.featured-articles"),
+    articles: z.array(
+      z.object({
+        id: z.number().optional(),
+        documentId: z.string().optional(),
+        title: z.string(),
+        description: z.string(),
+        slug: z.string(),
+        publishedAt: z.string().optional(),
+        updatedAt: z.string().optional(),
+        author: z.object({
+          id: z.number().optional(),
+          documentId: z.string().optional(),
+          fullName: z.string(),
+          image: imageSchema.optional(),
+        }),
+        featuredImage: imageSchema,
+      })
+    ),
+  }),
+  z.object({
+    ...blockBase,
+    __component: z.literal("blocks.newsletter"),
+    heading: z.string(),
+    text: z.string(),
+    placeholder: z.string(),
+    label: z.string(),
+    formId: z.string().nullable().optional(),
+  }),
+]);
+
+// ── Populate configs ──
+// Use `fields` to select only needed columns and `on` for dynamic zones.
 
 const blocksPopulate = {
   on: {
     "blocks.hero": {
+      fields: ["heading", "text"],
       populate: {
-        image: {
-          fields: ["url", "alternativeText"],
-        },
-        links: true,
+        image: { fields: ["url", "alternativeText"] },
+        links: { fields: ["href", "label", "isExternal", "isButtonLink", "type"] },
       },
     },
-    "blocks.heading-section": true,
+    "blocks.heading-section": {
+      fields: ["heading", "subHeading", "anchorLink"],
+    },
     "blocks.card-grid": {
       populate: {
-        card: true,
+        card: { fields: ["heading", "text"] },
       },
     },
     "blocks.content-with-image": {
+      fields: ["heading", "text", "reversed"],
       populate: {
-        image: {
-          fields: ["url", "alternativeText"],
-        },
-        link: true,
+        image: { fields: ["url", "alternativeText"] },
+        link: { fields: ["href", "label", "isExternal"] },
       },
     },
     "blocks.faqs": {
       populate: {
-        faq: true,
+        faq: { fields: ["heading", "text"] },
       },
     },
     "blocks.person-card": {
+      fields: ["personName", "personJob", "text"],
       populate: {
-        image: {
-          fields: ["url", "alternativeText"],
-        },
+        image: { fields: ["url", "alternativeText"] },
       },
     },
-    "blocks.markdown": true,
+    "blocks.markdown": {
+      fields: ["content"],
+    },
     "blocks.featured-articles": {
       populate: {
         articles: {
+          fields: ["title", "description", "slug", "publishedAt", "updatedAt"],
           populate: {
-            featuredImage: {
-              fields: ["url", "alternativeText"],
-            },
+            featuredImage: { fields: ["url", "alternativeText"] },
             author: {
+              fields: ["fullName"],
               populate: {
-                image: {
-                  fields: ["url", "alternativeText"],
-                },
+                image: { fields: ["url", "alternativeText"] },
               },
             },
           },
         },
       },
     },
-    "blocks.newsletter": true,
+    "blocks.newsletter": {
+      fields: ["heading", "text", "placeholder", "label", "formId"],
+    },
   },
 };
+
+// ── Collections ──
 
 const strapiPosts = defineCollection({
   loader: strapiLoader({
     contentType: "article",
+    clientConfig,
     params: {
+      fields: ["title", "slug", "description", "content", "publishedAt", "updatedAt"],
       populate: {
-        featuredImage: {
-          fields: ["url", "alternativeText"],
-        },
+        featuredImage: { fields: ["url", "alternativeText"] },
         author: {
+          fields: ["fullName"],
           populate: {
-            image: {
-              fields: ["url", "alternativeText"],
-            },
+            image: { fields: ["url", "alternativeText"] },
           },
         },
-        contentTags: {
-          populate: "*",
-        },
+        contentTags: { fields: ["title"] },
         blocks: blocksPopulate,
       },
     },
-  }) as unknown as Loader,
+  }),
+  schema: z.object({
+    title: z.string(),
+    slug: z.string(),
+    description: z.string().nullable().optional(),
+    content: z.string().nullable().optional(),
+    publishedAt: z.string().nullable().optional(),
+    updatedAt: z.string().nullable().optional(),
+    featuredImage: imageSchema.optional(),
+    author: z
+      .object({
+        id: z.number().optional(),
+        documentId: z.string().optional(),
+        fullName: z.string(),
+        image: imageSchema.optional(),
+      })
+      .optional(),
+    contentTags: z
+      .array(
+        z.object({
+          id: z.number().optional(),
+          documentId: z.string().optional(),
+          title: z.string(),
+        })
+      )
+      .optional(),
+    blocks: z.array(blockSchema).optional(),
+  }),
 });
 
 const strapiPages = defineCollection({
   loader: strapiLoader({
     contentType: "page",
+    clientConfig,
     params: {
+      fields: ["title", "slug"],
       populate: {
         blocks: blocksPopulate,
       },
     },
-  }) as unknown as Loader,
+  }),
+  schema: z.object({
+    title: z.string().nullable().optional(),
+    slug: z.string(),
+    blocks: z.array(blockSchema).optional(),
+  }),
 });
 
 export const collections = {

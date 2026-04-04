@@ -8,27 +8,17 @@ interface Props {
 const {
   data: { card },
 } = Astro.props;
-
 ---
 
 <section>
-  <div class="pt-12 pb-20 bg-gray-50">
-    <div class="container mx-auto px-4">
-      <div class="flex flex-wrap -mx-4">
-        {
-          card &&
-            card.map((card) => {
-              return (
-                <div class="mb-12 lg:mb-0 w-full md:w-1/2 lg:w-1/4 px-4">
-                  <h4 class="mb-4 text-2xl font-bold font-heading">
-                    {card.heading}
-                  </h4>
-                  <p class="text-gray-500 leading-loose">{card.text}</p>
-                </div>
-              );
-            })
-        }
-      </div>
+  <div class="mx-auto max-w-6xl px-6 py-16">
+    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      {card && card.map((card) => (
+        <div class="rounded-card border border-border bg-surface-raised p-6 transition hover:shadow-md hover:border-border-hover">
+          <h4 class="text-lg font-semibold text-secondary font-heading">{card.heading}</h4>
+          <p class="mt-2 text-sm leading-relaxed text-muted">{card.text}</p>
+        </div>
+      ))}
     </div>
   </div>
 </section>

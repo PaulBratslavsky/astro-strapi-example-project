@@ -11,111 +11,87 @@ const {
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
-
 ---
 
-<header class="sticky top-0 z-50">
-  <nav class="relative px-6 py-6 flex justify-between items-center bg-white">
-    <a class="text-3xl font-bold leading-none" href={logo.logoLink}>
-      <StrapiImage src={logo.image.url} alt={logo.image.alternativeText} height={48} width={48} />
+<header class="sticky top-0 z-40 border-b border-border bg-surface-raised/80 backdrop-blur-lg">
+  <nav class="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+    <a class="flex items-center gap-2 font-heading text-lg font-bold tracking-tight" href={logo.logoLink}>
+      <StrapiImage src={logo.image.url} alt={logo.image.alternativeText} height={36} width={36} class="rounded-lg" />
     </a>
-    <div class="lg:hidden">
-      <button class="navbar-burger flex items-center text-green-600 p-3" id="burger-button">
-        <svg
-          class="block h-4 w-4 fill-current"
-          viewBox="0 0 20 20"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <title>Mobile menu</title>
-          <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"></path>
-        </svg>
-      </button>
-    </div>
-    <ul
-      class="hidden absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 lg:mx-auto lg:flex lg:items-center lg:w-auto lg:space-x-6"
-    >
-      {
-        navItems.map((item) => (
+
+    <button class="lg:hidden rounded-lg p-2 text-muted hover:text-secondary transition" id="burger-button" aria-label="Toggle menu">
+      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+
+    <ul class="hidden lg:flex items-center gap-1">
+      {navItems.map((item) => (
+        <li>
+          <a
+            class={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+              currentPath === item.href
+                ? 'bg-primary-50 text-primary-700'
+                : 'text-muted hover:text-secondary hover:bg-surface-alt'
+            }`}
+            href={item.href}
+            target={item.isExternal ? "_blank" : "_self"}
+          >
+            {item.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    {cta && (
+      <a
+        class="hidden lg:inline-flex items-center rounded-button bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition"
+        href={cta.href}
+        target={cta.isExternal ? "_blank" : "_self"}
+      >
+        {cta.label}
+      </a>
+    )}
+  </nav>
+
+  <!-- Mobile menu -->
+  <div class="navbar-menu fixed inset-0 z-50 hidden" id="navbar-menu">
+    <div class="navbar-backdrop fixed inset-0 bg-black/20 backdrop-blur-sm"></div>
+    <nav class="relative ml-auto flex h-full w-80 max-w-[85vw] flex-col bg-surface-raised p-6 shadow-xl">
+      <div class="mb-8 flex items-center justify-between">
+        <a class="flex items-center gap-2 font-heading text-lg font-bold" href={logo.logoLink}>
+          <StrapiImage src={logo.image.url} alt={logo.image.alternativeText} height={36} width={36} class="rounded-lg" />
+        </a>
+        <button class="navbar-close rounded-lg p-2 text-muted hover:text-secondary transition" aria-label="Close menu">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <ul class="flex-1 space-y-1">
+        {navItems.map((item) => (
           <li>
             <a
-              class={`text-sm font-bold ${currentPath === item.href ? 'text-green-600' : 'text-gray-400 hover:text-gray-500'}`}
+              class={`block rounded-lg px-4 py-2.5 text-sm font-medium transition ${
+                currentPath === item.href
+                  ? 'bg-primary-50 text-primary-700'
+                  : 'text-muted hover:bg-surface-alt hover:text-secondary'
+              }`}
               href={item.href}
               target={item.isExternal ? "_blank" : "_self"}
             >
               {item.label}
             </a>
           </li>
-        ))
-      }
-    </ul>
-    {
-      cta && (
+        ))}
+      </ul>
+      {cta && (
         <a
-          class="hidden lg:inline-block py-2 px-6 bg-green-500 hover:bg-green-600 text-sm text-white font-bold rounded-l-xl rounded-t-xl transition duration-200"
+          class="mt-6 block rounded-button bg-primary-600 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition"
           href={cta.href}
           target={cta.isExternal ? "_blank" : "_self"}
-        >
-          {cta.label}
-        </a>
-      )
-    }
-  </nav>
-  <div
-    class="navbar-menu fixed top-0 left-0 bottom-0 w-5/6 max-w-sm z-50 hidden"
-    id="navbar-menu"
-  >
-    <div class="navbar-backdrop fixed inset-0 bg-gray-800 opacity-25"></div>
-    <nav
-      class="relative flex flex-col py-6 px-6 h-full w-full bg-white border-r overflow-y-auto"
-    >
-      <div class="flex items-center mb-8">
-        <a class="mr-auto text-3xl font-bold leading-none" href={logo.logoLink}>
-          <StrapiImage class="h-12 w-12" src={logo.image.url} alt={logo.image.alternativeText} height={48} width={48} />
-        </a>
-        <button class="navbar-close">
-          <svg
-            class="h-6 w-6 text-gray-400 cursor-pointer hover:text-gray-500"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-      <div>
-        <ul>
-          {
-            navItems.map((item) => (
-              <li class="mb-1">
-                <a
-                  class="block p-4 text-sm font-semibold text-gray-400 hover:bg-green-50 hover:text-green-600 rounded"
-                  href={item.href}
-                  target={item.isExternal ? "_blank" : "_self"}
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </div>
-      <div class="mt-auto">
-        <div class="pt-6">
-          { cta && (
-            <a
-              class="block px-4 py-3 mb-2 leading-loose text-xs text-center text-white font-semibold bg-green-600 hover:bg-green-700 rounded-l-xl rounded-t-xl"
-              href={cta.href}
-              target={cta.isExternal ? "_blank" : "_self"}
-            >{cta.label}</a>
-          )}
-        </div>
-      </div>
+        >{cta.label}</a>
+      )}
     </nav>
   </div>
 </header>
@@ -124,13 +100,9 @@ const currentPath = Astro.url.pathname;
   const burgerButton = document.getElementById('burger-button') as HTMLButtonElement;
   const navbarMenu = document.getElementById('navbar-menu') as HTMLDivElement;
   const closeButton = document.querySelector('.navbar-close') as HTMLButtonElement;
-  
-  burgerButton.addEventListener('click', () => {
-    navbarMenu.classList.toggle('hidden');
-  });
+  const backdrop = document.querySelector('.navbar-backdrop') as HTMLDivElement;
 
-  closeButton.addEventListener('click', () => {
-    navbarMenu.classList.add('hidden');
-  });
-  
+  burgerButton.addEventListener('click', () => navbarMenu.classList.toggle('hidden'));
+  closeButton.addEventListener('click', () => navbarMenu.classList.add('hidden'));
+  backdrop.addEventListener('click', () => navbarMenu.classList.add('hidden'));
 </script>

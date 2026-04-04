@@ -11,20 +11,32 @@ const {
 ---
 
 <section>
-  <div class="py-20 bg-gray-50 ">
-    <div class="container mx-auto px-4">
-      <div class={`mb-8 flex flex-col lg:flex-row gap-4 ${reversed && 'lg:flex-row-reverse'}`}>
-        <div class="w-full lg:w-1/2 ">
-          <StrapiImage src={image.url} alt={image.alternativeText} height={600} width={800} class="object-cover" />
-        </div>
-        <div class="flex flex-col justify-center w-full lg:w-1/2 py-6 lg:pt-10 px-6 rounded-r bg-white">
-          <h2 class="my-4 text-2xl font-bold">{heading}</h2>
-          <p class="mb-4 text-gray-400 leading-loose">{text}</p>
-          {
-            link &&
-            <a class="text-green-600 hover:text-green-700 font-bold" href={link.href} target={link.isExternal ? '_blank' : '_self'}>{link.label}</a>
-          }
-        </div>
+  <div class="mx-auto max-w-6xl px-6 py-20">
+    <div class={`flex flex-col items-center gap-10 lg:gap-16 ${reversed ? 'lg:flex-row-reverse' : 'lg:flex-row'}`}>
+      <div class="w-full lg:w-1/2">
+        <StrapiImage
+          src={image.url}
+          alt={image.alternativeText}
+          height={600}
+          width={800}
+          class="w-full rounded-2xl object-cover shadow-sm"
+        />
+      </div>
+      <div class="w-full lg:w-1/2">
+        <h2 class="text-2xl font-bold tracking-tight text-secondary sm:text-3xl font-heading">{heading}</h2>
+        <p class="mt-4 leading-relaxed text-muted">{text}</p>
+        {link && (
+          <a
+            class="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary-600 hover:text-primary-700 transition"
+            href={link.href}
+            target={link.isExternal ? '_blank' : '_self'}
+          >
+            {link.label}
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </a>
+        )}
       </div>
     </div>
   </div>

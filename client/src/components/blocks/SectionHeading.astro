@@ -8,16 +8,13 @@ interface Props {
 const {
   data: { heading, subHeading, anchorLink },
 } = Astro.props;
-
 ---
 
 <section id={anchorLink}>
-  <div class="pt-28 pb-4 bg-gray-50">
-    <div class="container mx-auto px-4">
-      <div class="mb-16 max-w-md mx-auto text-center">
-        <span class="text-green-600 font-bold">{subHeading}</span>
-        <h2 class="text-4xl md:text-5xl font-bold">{heading}</h2>
-      </div>
+  <div class="mx-auto max-w-6xl px-6 pt-24 pb-6">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="text-sm font-semibold uppercase tracking-wider text-primary-600">{subHeading}</p>
+      <h2 class="mt-2 text-3xl font-bold tracking-tight text-secondary sm:text-4xl font-heading">{heading}</h2>
     </div>
   </div>
 </section>

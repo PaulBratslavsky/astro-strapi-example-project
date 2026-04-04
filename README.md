@@ -1,8 +1,14 @@
-# Astro 5 and Strapi 5 Example Project
+# Astro 6 and Strapi 5 Example Project
 
-This is an example project for Astro 5 and Strapi 5. It is a simple project that uses Astro 5 and Strapi 5 to create a website with a landing page, a blog, and a contact form.
+This is an example project for Astro 6 and Strapi 5 (latest). It is a simple project that uses Astro and Strapi to create a website with a landing page, a blog, and a contact form.
 
-Uses the new strapi-community-astro-loader-v2 to fetch data from Strapi for pages and articles.
+Uses [strapi-community-astro-loader v4](https://www.npmjs.com/package/strapi-community-astro-loader) to fetch data from Strapi for pages and articles via Astro's Content Layer API.
+
+### What's New
+
+- **Astro v6** with Zod v4 support
+- **Strapi v5** (latest)
+- **strapi-community-astro-loader v4** — updated for Astro v6 compatibility, uses `@strapi/client` under the hood, and requires user-defined schemas
 
 (contact form not implemented yet)
 
@@ -105,6 +111,128 @@ The global page is responsible for the header and footer content of the website.
 The global page is rendered from the global content type.
 
 ![Screenshot of the global content type](./img/011-strapi-server-global-page.png)
+
+## Two Ways to Fetch Strapi Data
+
+This project uses two approaches to get data from Strapi, depending on the use case:
+
+### 1. Content Collections via the Loader
+
+For collection types like articles and pages, we use `strapi-community-astro-loader` inside `content.config.ts`. This gives you type-safe collections with Zod validation, pagination, and digest-based caching — all through Astro's Content Layer API.
+
+```typescript
+// client/src/content.config.ts
+import { defineCollection, z } from "astro:content";
+import { strapiLoader } from "strapi-community-astro-loader";
+
+const strapiPosts = defineCollection({
+  loader: strapiLoader({
+    contentType: "article",
+    clientConfig: { baseURL: "http://localhost:1337/api" },
+    params: {
+      fields: ["title", "slug", "description"],
+      populate: {
+        author: { fields: ["fullName"] },
+      },
+    },
+  }),
+  schema: z.object({
+    title: z.string(),
+    slug: z.string(),
+    description: z.string().nullable().optional(),
+    author: z.object({ fullName: z.string() }).optional(),
+  }),
+});
+```
+
+Then query it in any page with `getCollection("strapiPosts")`.
+
+### 2. Direct Queries via `@strapi/client`
+
+For single types (global settings, landing page) that aren't content collections, we use `@strapi/client` directly. This is useful when you need data in layouts or components that don't map to a collection.
+
+```typescript
+// client/src/utils/strapi-client.ts
+import { strapi } from "@strapi/client";
+
+const strapiClient = strapi({
+  baseURL: (import.meta.env.STRAPI_BASE_URL ?? "http://localhost:1337") + "/api",
+});
+
+export { strapiClient };
+```
+
+```typescript
+// client/src/utils/loaders.ts
+import { strapiClient } from "./strapi-client";
+
+async function getGlobalPageData() {
+  const data = await strapiClient.single("global").find({
+    populate: {
+      header: {
+        populate: {
+          logo: { populate: { image: { fields: ["url", "alternativeText"] } } },
+          navItems: true,
+          cta: true,
+        },
+      },
+      footer: {
+        populate: {
+          logo: { populate: { image: { fields: ["url", "alternativeText"] } } },
+          navItems: true,
+          socialLinks: { populate: { image: { fields: ["url", "alternativeText"] } } },
+        },
+      },
+    },
+  });
+  return data?.data;
+}
+```
+
+Both approaches use `STRAPI_BASE_URL` as the single environment variable for the Strapi server URL.
+
+## Strapi Populate and Filtering
+
+This project uses explicit `fields` and `populate` params in the loader to fetch only the data needed for each page. For a deep dive on how populate and filtering work in Strapi v5, check out these resources:
+
+- [Demystifying Strapi's Populate and Filtering](https://strapi.io/blog/demystifying-strapi-s-populate-and-filtering) — covers field selection, the `on` syntax for dynamic zones, deep nested population, and all available filter operators.
+- [Route-Based Middleware to Handle Default Population](https://strapi.io/blog/route-based-middleware-to-handle-default-population-query-logic) — if you prefer to handle population server-side in Strapi using route middleware instead of passing populate params from the client.
+
+## Extending the Project with Claude Code
+
+This project includes a built-in [Claude Code skill](https://code.claude.com/docs/en/skills.md) that lets you add new pages to both Strapi and Astro with a single command.
+
+### Adding a new page
+
+Open Claude Code in the project root and run:
+
+```
+/add-page products
+```
+
+Claude will ask you what fields the page needs, then generate:
+
+- **Strapi**: content type schema, controller, routes, service, and a seed script with sample data
+- **Astro**: content collection config, listing page, and detail page — all wired up and styled
+
+**Example: adding a products page**
+
+```
+> /add-page products
+
+What fields should each product have?
+
+> name, price (number), image, and a short description
+
+Creating product content type in Strapi...
+Creating seed script with 3 sample products...
+Adding strapiProducts collection to content.config.ts...
+Creating listing page at /products and detail page at /products/[slug]...
+
+Done! Restart Strapi, run the seed script, and visit /products.
+```
+
+The skill follows the existing project patterns — same styling, same loader config, same Zod schemas. You can run it multiple times to add as many pages as you need.
 
 ## Thank you
 

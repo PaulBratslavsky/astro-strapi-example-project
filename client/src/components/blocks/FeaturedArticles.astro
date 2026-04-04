@@ -13,44 +13,35 @@ const {
 ---
 
 <section>
-  <div class="py-20 bg-gray-50">
-    <div class="container mx-auto px-4 w-full lg:w-3/4">
-      <div class="flex gap-4 flex-wrap">
-        {
-          articles.map((article) => (
-            <a href={`/blog/${article.slug}`} class="flex flex-wrap -mx-3">
-              <div class="mb-4 lg:mb-0 w-full lg:w-1/4 px-3">
-                <StrapiImage
-                  src={article.featuredImage.url}
-                  alt={article.featuredImage.alternativeText}
-                  width={300}
-                  height={200}
-                  class="w-full h-full object-cover rounded"
-                />
-              </div>  
-              <div class="w-full lg:w-3/4 px-3">
-                <span class="hover:underline">
-                  <h3 class="mb-1 text-2xl font-bold font-heading">
-                    {article.title}
-                  </h3>
-                </span>
-                <div class="mb-2 flex items-center text-sm">
-                  <span
-                    class="text-green-600 hover:text-green-700"
-                  >
-                    {article.author.fullName}
-                  </span>
-                  <span class="text-gray-400 mx-2">•</span>
-                  <span class="text-gray-400">
-                    {formatDate(article.publishedAt)}
-                  </span>
-                </div>
-                <p class="text-gray-500">{article.description}</p>
-              </div>
-            </a>
-          ))
-        }
-      </div>
+  <div class="mx-auto max-w-5xl px-6 py-16">
+    <div class="space-y-8">
+      {articles.map((article) => (
+        <a
+          href={`/blog/${article.slug}`}
+          class="group flex flex-col gap-6 rounded-card border border-border bg-surface-raised p-4 transition hover:shadow-md hover:border-border-hover sm:flex-row sm:items-center"
+        >
+          <div class="shrink-0 sm:w-48">
+            <StrapiImage
+              src={article.featuredImage.url}
+              alt={article.featuredImage.alternativeText}
+              width={300}
+              height={200}
+              class="h-36 w-full rounded-lg object-cover sm:h-32"
+            />
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-lg font-semibold text-secondary group-hover:text-primary-700 transition font-heading">
+              {article.title}
+            </h3>
+            <div class="mt-1 flex items-center gap-2 text-sm text-faint">
+              <span class="font-medium text-primary-600">{article.author.fullName}</span>
+              <span>&middot;</span>
+              <time>{formatDate(article.publishedAt)}</time>
+            </div>
+            <p class="mt-2 text-sm leading-relaxed text-muted line-clamp-2">{article.description}</p>
+          </div>
+        </a>
+      ))}
     </div>
   </div>
 </section>
