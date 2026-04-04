@@ -8,7 +8,7 @@ const { question, answer } = Astro.props;
 ---
 
 <li class="rounded-card border border-border bg-surface-raised faq-item transition hover:border-border-hover">
-  <button class="flex w-full items-center justify-between gap-4 p-5 text-left faq-item-button">
+  <button class="flex w-full items-center justify-between gap-4 p-5 text-left cursor-pointer hover:bg-surface-alt transition faq-item-button">
     <span class="text-base font-semibold text-secondary font-heading">{question}</span>
     <svg
       class="h-5 w-5 shrink-0 text-muted transition-transform duration-200 faq-icon"
@@ -26,7 +26,6 @@ const { question, answer } = Astro.props;
 </li>
 
 <style>
-  .faq-item-button { cursor: pointer; }
   .faq-icon.rotate-180 { transform: rotate(180deg); }
 </style>
 

@@ -19,6 +19,7 @@ Add a new page to the Astro + Strapi starter project. This skill handles:
 
 **Important references:**
 - `populate-best-practices.md` — read this before writing any content collection config
+- `design-patterns.md` — read this before writing any Astro page templates. Contains concrete Tailwind patterns, theme tokens, and building blocks for each content type
 
 ## Usage
 
@@ -57,6 +58,7 @@ Before generating anything, read these files to understand the existing patterns
 - `client/src/pages/[slug]/index.astro` — how dynamic pages render blocks (catch-all pattern)
 - `client/src/pages/blog/[...page].astro` — how collection listing pages work (custom page override)
 - `.claude/skills/add-page/populate-best-practices.md` — populate and schema rules
+- `.claude/skills/add-page/design-patterns.md` — theme tokens, Tailwind patterns, and content-type-specific building blocks
 
 Match the existing code style exactly. Do not introduce new patterns.
 

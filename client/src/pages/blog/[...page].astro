@@ -112,13 +112,15 @@ const totalPages = Math.ceil(page.total / page.size);
       </div>
     )}
 
-    <div class="mt-12">
-      <Pagination
-        previousPage={page.url.prev ? page.url.prev : null}
-        nextPage={page.url.next ? page.url.next : null}
-        currentPage={currentPage}
-        totalPages={totalPages}
-      />
-    </div>
+    {totalPages > 1 && (
+      <div class="mt-12">
+        <Pagination
+          previousPage={page.url.prev ? page.url.prev : null}
+          nextPage={page.url.next ? page.url.next : null}
+          currentPage={currentPage}
+          totalPages={totalPages}
+        />
+      </div>
+    )}
   </section>
 </BaseLayout>
