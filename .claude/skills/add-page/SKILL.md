@@ -12,10 +12,10 @@ allowed-tools: Bash Read Write Edit Glob Grep AskUserQuestion
 
 # Add Page Skill
 
-Add a new page to the Astro + Strapi starter project. This skill handles:
-- Strapi backend (content type + seed data + placeholder images + permissions)
-- Astro frontend (page route + collection config via `strapi-community-astro-loader`)
-- Navigation (adds link to Global header `navItems` via the seed script)
+Add a new page to the Astro + Strapi starter project. This skill supports two page architectures:
+
+1. **Block-based pages** — a single page composed of reusable blocks (hero, cards, headings, etc.) via Strapi's dynamic zone. Examples: community page, about page, contact page, pricing page. These are entries in the existing **Page** collection type — never create a separate single type.
+2. **Collection pages** — a listing of items with individual detail pages (e.g., products, team members, events, workshops). These create a new Strapi collection type with its own API.
 
 **Important references:**
 - `populate-best-practices.md` — read this before writing any content collection config
@@ -25,28 +25,43 @@ Add a new page to the Astro + Strapi starter project. This skill handles:
 
 ```
 /add-page products
+/add-page community
 /add-page
 ```
 
 ## Execution Steps
 
-### Step 1: Gather Page Requirements
+### Step 1: Determine Page Type and Gather Requirements
 
-If no page name was provided, ask the user:
+First, determine which architecture fits the request:
+
+| Signal | Page type |
+|---|---|
+| User describes a **list of items** with individual entries (products, team members, events) | **Collection** — create a new collection type |
+| User describes a **single page** with sections/blocks (about, community, contact, pricing) | **Block-based** — create an entry in the existing Page collection type |
+| User says "landing page" or describes sections like "hero + cards + links" | **Block-based** |
+| User describes items that each need their own URL (e.g., `/products/widget-a`) | **Collection** |
+
+If unclear, ask using `AskUserQuestion`:
 
 ```
-What page would you like to add? Give me a name and a brief description.
+What page would you like to add?
 
 Examples:
-  - "products" — a page listing products with name, price, image, and description
-  - "team" — a page showing team members with photo, role, and bio
-  - "services" — a page listing services with title, description, and icon
+  - "products" — a collection of items, each with its own detail page
+  - "community" — a single page with sections (hero, benefits, links)
+  - "team" — a collection of team members with bios
 ```
 
-Use `AskUserQuestion` to gather:
+For **collection pages**, gather:
 1. **Page name** (singular, e.g., "product")
-2. **Fields** — what data should each entry have? Ask the user to describe what they want or suggest sensible defaults based on the page name.
-3. **Page type** — collection (list of items) or single (one page with blocks). Default to collection type.
+2. **Fields** — what data should each entry have?
+
+For **block-based pages**, gather:
+1. **Page name/slug** (e.g., "community", "about")
+2. **Sections** — what sections should the page have? Map each section to existing block components where possible. If a needed block doesn't exist, create it.
+
+**CRITICAL: Never create a Strapi single type for a page.** Single types are for site-wide settings (global, header, footer). Pages — even one-off pages — should be entries in the Page collection type using dynamic zone blocks. This allows content editors to manage all pages from one place in the admin.
 
 ### Step 2: Reference the Existing Project Structure
 
@@ -62,7 +77,124 @@ Before generating anything, read these files to understand the existing patterns
 
 Match the existing code style exactly. Do not introduce new patterns.
 
-### Step 3: Create the Strapi Content Type
+**After Step 2, follow the path that matches the page type determined in Step 1:**
+- **Block-based pages** → go to Step 3A
+- **Collection pages** → go to Step 3B
+
+---
+
+## Block-Based Page Path (community, about, pricing, etc.)
+
+### Step 3A: Map Sections to Block Components
+
+Look at the user's requested sections and map each one to existing block components. Check `server/src/components/blocks/` for available blocks:
+
+- `blocks.hero` — heading, text, image, links
+- `blocks.heading-section` — heading, subHeading, anchorLink
+- `blocks.card-grid` — repeatable cards (heading + text)
+- `blocks.content-with-image` — heading, text, image, link, reversed toggle
+- `blocks.faqs` — repeatable FAQ items (heading + text)
+- `blocks.person-card` — personName, personJob, image, text
+- `blocks.markdown` — richtext content
+- `blocks.featured-articles` — linked article entries
+- `blocks.newsletter` — heading, text, placeholder, label, formId
+
+**If a section maps to an existing block, use it.** For example:
+- "community message" → `blocks.hero` or `blocks.content-with-image`
+- "benefit cards" → `blocks.card-grid`
+- "FAQ section" → `blocks.faqs`
+
+**If a section needs to display items from a collection** (e.g., "featured workshops" on a community page), create a block component that references that collection — following the `blocks.featured-articles` pattern. The block uses a `relation` field to link to the collection entries. If the collection type doesn't exist yet, create it first (follow the Collection Page Path), then create the referencing block. Never store collection data as inline JSON fields.
+
+**If a section requires a new block component that doesn't exist**, create it:
+
+1. Create the component JSON at `server/src/components/blocks/<name>.json`
+2. If the block uses sub-components, create shared components at `server/src/components/shared/<name>.json`
+3. Register the new block in the Page schema's dynamic zone at `server/src/api/page/content-types/page/schema.json` (add it to the `blocks.components` array)
+4. Add a Zod schema entry in `client/src/content.config.ts` (in the `blockSchema` discriminated union)
+5. Create an Astro renderer component at `client/src/components/blocks/<Name>.astro`
+6. Register it in `client/src/components/blocks/BlockRenderer.astro`
+7. Add populate config in `client/src/content.config.ts` (in the `blocksPopulate` object)
+8. Add populate config in `client/src/utils/loaders.ts` (in the `blocksPopulate` object there too)
+
+### Step 4A: Seed the Page Entry
+
+Create a seed script at `server/scripts/seed-<page-slug>.js` that:
+
+1. Sets public permissions for the page API (`find`, `findOne`) if not already set
+2. Creates a Page entry using the **document service** with the blocks dynamic zone populated
+3. Adds a navigation link to the Global header
+
+The seed script creates a Page entry with blocks — example:
+
+```javascript
+await app.documents('api::page.page').create({
+  data: {
+    title: 'Community',
+    slug: 'community',
+    description: 'Join our community',
+    blocks: [
+      {
+        __component: 'blocks.hero',
+        heading: '...',
+        text: '...',
+      },
+      {
+        __component: 'blocks.card-grid',
+        card: [
+          { heading: '...', text: '...' },
+          { heading: '...', text: '...' },
+        ],
+      },
+    ],
+  },
+  status: 'published',
+});
+```
+
+Each block in the array must have a `__component` field matching the registered component name. Add the nav link using the same pattern as collection pages.
+
+### Step 5A: Frontend (Optional Custom Override)
+
+Block-based pages are automatically rendered by the existing catch-all route at `client/src/pages/[slug]/index.astro` using `BlockRenderer`. **You don't need to create any new Astro pages** unless the user wants a custom layout that differs from the standard block rendering.
+
+If a custom override is needed, create it at `client/src/pages/<slug>/index.astro`.
+
+### Step 6A: Summary
+
+Print what was created:
+
+```
+New block-based page "<slug>" added successfully!
+
+Strapi (server/):
+  - New block components (if any):
+    - src/components/blocks/<name>.json
+    - Updated page schema to include new block
+  - scripts/seed-<slug>.js (page entry with blocks + nav link)
+
+Astro (client/):
+  - New block renderers (if any):
+    - src/components/blocks/<Name>.astro
+    - Updated BlockRenderer.astro
+    - Updated content.config.ts (blockSchema + blocksPopulate)
+  - Page renders automatically via [slug]/index.astro (no new page file needed)
+
+Next steps:
+  1. Clean stale builds: cd server && yarn clean
+  2. Restart the Strapi server: cd server && yarn develop
+  3. Run the seed script: cd server && node scripts/seed-<slug>.js
+  4. Restart the Astro dev server: cd client && yarn dev
+  5. Visit http://localhost:4321/<slug> to see your new page
+```
+
+Skip to Step 7 (final summary).
+
+---
+
+## Collection Page Path (products, team, events, workshops, etc.)
+
+### Step 3B: Create the Strapi Content Type
 
 Generate the full API structure at `server/src/api/<name>/`:
 
