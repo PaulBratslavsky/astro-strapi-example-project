@@ -463,6 +463,8 @@ Next steps:
 
 The generated code matches the rest of the project — same patterns, same styling. The skill lives at `.claude/skills/add-page/SKILL.md` if you want to read or modify it.
 
+For a deeper look at what agent skills are and how to build your own, check out [What Are Agent Skills and How to Use Them](https://strapi.io/blog/what-are-agent-skills-and-how-to-use-them).
+
 ---
 
 ## Wrapping Up

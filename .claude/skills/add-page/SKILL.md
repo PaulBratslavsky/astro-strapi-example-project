@@ -462,8 +462,13 @@ Astro (client/):
   - src/pages/<plural-name>/[slug].astro (detail page)
 
 Next steps:
-  1. Restart the Strapi server: cd server && yarn develop
-  2. Run the seed script: cd server && node scripts/seed-<name>.js
-  3. Restart the Astro dev server: cd client && yarn dev
-  4. Visit http://localhost:4321/<plural-name> to see your new page
+  1. Clean stale builds: cd server && yarn clean
+  2. Restart the Strapi server: cd server && yarn develop
+  3. Run the seed script: cd server && node scripts/seed-<name>.js
+  4. Restart the Astro dev server: cd client && yarn dev
+  5. Visit http://localhost:4321/<plural-name> to see your new page
+
+Troubleshooting:
+  - "Cannot read properties of undefined (reading 'kind')" → Run `cd server && yarn clean`
+    This happens when dist/ has stale compiled files from a deleted content type.
 ```

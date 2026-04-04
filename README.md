@@ -202,6 +202,8 @@ This project uses explicit `fields` and `populate` params in the loader to fetch
 
 This project includes a built-in [Claude Code skill](https://code.claude.com/docs/en/skills.md) that lets you add new pages to both Strapi and Astro with a single command.
 
+> **This is an example skill** designed to show how you can use Claude Code skills to automate repetitive scaffolding in a full-stack project. It's meant as a starting point — feel free to modify the skill definition at `.claude/skills/add-page/skill.md` to match your own project's patterns, design system, or deployment workflow. The skill is not a black box; it's a markdown file you own and can customize however you like.
+
 ### Adding a new page
 
 Open Claude Code in the project root and run:
@@ -212,8 +214,8 @@ Open Claude Code in the project root and run:
 
 Claude will ask you what fields the page needs, then generate:
 
-- **Strapi**: content type schema, controller, routes, service, and a seed script with sample data
-- **Astro**: content collection config, listing page, and detail page — all wired up and styled
+- **Strapi**: content type schema, controller, routes, service, and a seed script with sample data, placeholder images, public permissions, and a navigation link
+- **Astro**: content collection config, listing page, and detail page — all wired up and styled to match the content type (team pages get people-focused layouts, product pages get commerce-style cards, etc.)
 
 **Example: adding a products page**
 
@@ -232,7 +234,17 @@ Creating listing page at /products and detail page at /products/[slug]...
 Done! Restart Strapi, run the seed script, and visit /products.
 ```
 
-The skill follows the existing project patterns — same styling, same loader config, same Zod schemas. You can run it multiple times to add as many pages as you need.
+The skill follows the existing project patterns — same loader config, same Zod schemas, same theme tokens. It adapts the UI layout to fit the content type rather than using a one-size-fits-all template. You can run it multiple times to add as many pages as you need.
+
+### Customizing the skill
+
+The skill lives at `.claude/skills/add-page/skill.md`. Some things you might want to change:
+
+- **Design patterns** — the skill includes a table of UI patterns by content type (people, products, events, etc.). Add your own or adjust the existing ones to match your design system.
+- **Seed data** — the seed script template downloads placeholder images from picsum.photos. Swap this for your own image service or remove it entirely.
+- **Fields** — the skill always includes `title`, `slug`, and `description` as base fields. Change these defaults if your project uses different conventions.
+
+For a deeper look at what agent skills are and how to build your own, check out [What Are Agent Skills and How to Use Them](https://strapi.io/blog/what-are-agent-skills-and-how-to-use-them).
 
 ## Thank you
 
