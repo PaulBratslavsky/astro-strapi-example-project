@@ -6,9 +6,13 @@ We recently upgraded our [Astro + Strapi starter project](https://github.com/Pau
 
 This post covers what's new in Astro 6, what we had to update in our starter and loader to support it, and how the data loading pipeline works if you want to build on top of this setup.
 
+![IMAGE: Hero screenshot of the starter project homepage — show the full landing page with hero section, cards, and footer](placeholder-hero.png)
+
 ## What Changed in Astro 6
 
 Astro has always positioned itself as the web framework for content-driven sites — blogs, marketing pages, docs, e-commerce. It's server-first, ships minimal JavaScript, and lets you bring in React/Vue/Svelte only where you need interactivity. Astro 6 continues that direction with some significant under-the-hood changes.
+
+Chris from Coding in Public did a great walkthrough of the full release in his [(NEW) Astro 6: First Look](https://www.youtube.com/watch?v=WxUEtNg07gE) video — worth a watch if you want the full picture. Here's a summary of the changes that affected us the most.
 
 ### Node 22 Minimum
 
@@ -85,6 +89,8 @@ When we upgraded to Astro 6, our content collections immediately failed with:
 ```
 Invalid schema: expected a Zod schema
 ```
+
+![IMAGE: Terminal screenshot showing the "Invalid schema: expected a Zod schema" error during astro dev](placeholder-error-terminal.png)
 
 Here's what happened. The `strapi-community-astro-loader` v2 bundled its own copy of Zod 3 in the dist output. It did an `instanceof z.ZodType` check internally — but that `z` was Zod 3. When Astro 6 (running Zod 4) tried to validate what the loader returned, the Zod 3 schema objects were completely unrecognizable to Zod 4. Different class hierarchy, different internals, no match.
 
@@ -166,6 +172,22 @@ What's going on here:
 - `cacheDurationInMs` is opt-in; set it to `0` (default) and it fetches fresh every time
 
 ## How the Data Pipeline Works
+
+```mermaid
+flowchart LR
+    A[Strapi API] -->|@strapi/client| B[strapi-community-astro-loader]
+    B -->|parseData| C[Astro Content Layer]
+    C -->|schema| D[Zod v4 Validation]
+    D --> E[Typed Page Props]
+    E --> F[.astro Templates]
+
+    style A fill:#4945FF,color:#fff,stroke:none
+    style B fill:#1e293b,color:#fff,stroke:none
+    style C fill:#FF5D01,color:#fff,stroke:none
+    style D fill:#3178c6,color:#fff,stroke:none
+    style E fill:#16a34a,color:#fff,stroke:none
+    style F fill:#FF5D01,color:#fff,stroke:none
+```
 
 ### Defining Collections
 
@@ -317,6 +339,8 @@ const { title, content, author } = Astro.props;
 
 Everything is fully typed from the Zod schema. Your editor autocompletes `post.data.title` and catches typos at build time.
 
+![IMAGE: VS Code screenshot showing TypeScript autocompletion on post.data with all the typed fields from the Zod schema](placeholder-typescript-autocomplete.png)
+
 ### Handling Strapi Images
 
 Strapi stores images on its own domain (or a CDN if you configure one), so image URLs from the API are often relative paths like `/uploads/photo_abc123.jpg`. We use a `StrapiImage` component to resolve these:
@@ -398,6 +422,8 @@ The layout calls `getGlobalPageData()` and passes the result to the Header and F
 
 Both approaches use a single `STRAPI_BASE_URL` environment variable, so there's one place to change if your Strapi server moves.
 
+![IMAGE: Side-by-side comparison — Strapi admin panel showing the Global single type fields on the left, the rendered header/footer on the Astro site on the right](placeholder-strapi-global-vs-site.png)
+
 ## The Starter Project
 
 We recently updated the [astro-strapi-example-project](https://github.com/PaulBratslavsky/astro-strapi-example-project) to Astro 6. It's a minimal starter — not a theme, not a framework. It's meant to show how the pieces connect so you can take it apart and build your own thing.
@@ -423,6 +449,10 @@ yarn dev
 ```
 
 Both servers start. The seed data gives you content to work with right away.
+
+![IMAGE: Screenshot of the blog listing page showing the featured post layout with thumbnail cards below](placeholder-blog-listing.png)
+
+![IMAGE: Screenshot of the article detail page showing the featured image, tags, author, and markdown content](placeholder-article-detail.png)
 
 ## Adding Pages with Claude Code
 
