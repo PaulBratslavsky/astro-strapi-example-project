@@ -32,6 +32,25 @@ If you're wondering where I learned Astro — it's from Chris and his [Astro cou
 
 **Breaking changes worth noting:** `<ViewTransitions />` → `<ClientRouter />`, `Astro.site` → `import.meta.env.SITE`, Zod imports unified as `astro:zod`. See the full [Astro v6 upgrade guide](https://docs.astro.build/en/guides/upgrade-to/v6/).
 
+### Updating the Community Loader
+
+The Zod 4 change broke our `strapi-community-astro-loader` — it was bundling its own Zod 3, which conflicted with Astro 6. We published **v4.0.0** to fix it. The loader no longer bundles Zod, and schemas are now defined in `defineCollection()` instead of inside the loader:
+
+```ts
+// Before (loader v2/v3)
+const strapiPosts = defineCollection({
+  loader: strapiLoader({ contentType: "article", schema: articleSchema, ... }),
+});
+
+// After (loader v4)
+const strapiPosts = defineCollection({
+  loader: strapiLoader({ contentType: "article", ... }),
+  schema: z.object({ ... }),
+});
+```
+
+Under the hood, the loader uses `@strapi/client`, pages through all content automatically, and calls Astro's `parseData()` for Zod validation. It also uses `generateDigest()` to fingerprint entries so Astro can skip unchanged content on rebuilds. Full source is on [GitHub](https://github.com/PaulBratslavsky/strapi-community-astro-loader).
+
 ---
 
 ## Getting Started with the Astro 6 and Strapi 5 Starter
@@ -147,7 +166,7 @@ Then visit `http://localhost:4321/faqs` to see the result.
 
 ## Under the Hood: How the Data Pipeline Works
 
-Now that you've seen how to add pages, let's look at how data actually flows from Strapi to your Astro project.
+Curious how we handle data loading in our Strapi starter? Whether you're using the `/add-page` skill or building pages manually, understanding the data pipeline will help you get the most out of the project.
 
 ```mermaid
 flowchart LR
@@ -169,9 +188,7 @@ We demonstrate two ways to load data from Strapi: the **content loader** and the
 
 ### Content Collections via the Loader
 
-For collection types like articles and pages, we use the loader inside `content.config.ts`. It handles pagination, validation, and caching through Astro's Content Layer.
-
-We define reusable schemas to keep things DRY across collections:
+For collection types like articles and pages, we use the loader inside `content.config.ts`. Each collection pairs a loader (what to fetch) with a Zod schema (how to validate it). We use reusable schemas like `imageSchema` to keep things DRY:
 
 ```typescript
 // content.config.ts
@@ -182,32 +199,23 @@ const clientConfig = {
   baseURL: import.meta.env.STRAPI_BASE_URL || "http://localhost:1337/api",
 };
 
-// Reusable schemas — used across multiple collections
 const imageSchema = z.object({
-  id: z.number().optional(),
-  documentId: z.string().optional(),
   url: z.string(),
   alternativeText: z.string().nullable().optional(),
 });
-```
 
-Then each collection pairs a loader (what to fetch) with a schema (how to validate it):
-
-```typescript
 const strapiPosts = defineCollection({
   loader: strapiLoader({
     contentType: "article",
     clientConfig,
     params: {
-      fields: ["title", "slug", "description", "content", "publishedAt", "updatedAt"],
+      fields: ["title", "slug", "description", "content", "publishedAt"],
       populate: {
         featuredImage: { fields: ["url", "alternativeText"] },
         author: {
           fields: ["fullName"],
           populate: { image: { fields: ["url", "alternativeText"] } },
         },
-        contentTags: { fields: ["title"] },
-        blocks: blocksPopulate,
       },
     },
   }),
@@ -217,66 +225,25 @@ const strapiPosts = defineCollection({
     description: z.string().nullable().optional(),
     content: z.string().nullable().optional(),
     publishedAt: z.string().nullable().optional(),
-    updatedAt: z.string().nullable().optional(),
     featuredImage: imageSchema.optional(),
     author: z.object({
-      id: z.number().optional(),
-      documentId: z.string().optional(),
       fullName: z.string(),
       image: imageSchema.optional(),
     }).optional(),
-    contentTags: z.array(
-      z.object({ id: z.number().optional(), documentId: z.string().optional(), title: z.string() })
-    ).optional(),
-    blocks: z.array(blockSchema).optional(),
   }),
 });
 
 export const collections = { strapiPosts, strapiPages, strapiWorkshops };
 ```
 
-The `params` object controls what Strapi sends back — only the fields and relations your templates actually use. The `schema` validates every document at build time, so you catch mismatches early instead of shipping broken pages. Notice how reusable schemas like `imageSchema` keep things consistent across collections.
+The `params` object controls what Strapi sends back — only the fields and relations your templates actually use. The `schema` validates every document at build time, so you catch mismatches early instead of shipping broken pages.
 
-Then you query it in pages. Here's our blog listing with pagination:
-
-```astro
----
-// blog/[...page].astro
-import { getCollection } from "astro:content";
-import type { CollectionEntry } from "astro:content";
-
-type Post = CollectionEntry<"strapiPosts">;
-
-export async function getStaticPaths({ paginate }: { paginate: any }) {
-  const collection = await getCollection("strapiPosts");
-  const staticPaths = collection.map((article) => ({
-    params: { slug: article.data.slug },
-    props: article,
-  }));
-  return paginate(staticPaths, { pageSize: 5 });
-}
-
-const { page } = Astro.props;
-const articles = page.data;
----
-
-{articles.map((article) => (
-  <a href={`/blog/${article.params.slug}`}>
-    <h2>{article.props.data.title}</h2>
-    <p>{article.props.data.description}</p>
-  </a>
-))}
-```
-
-And the detail page destructures props directly from the schema:
+Then you query it in pages — everything is fully typed from the Zod schema:
 
 ```astro
 ---
 // blog/[slug].astro
 import { getCollection } from "astro:content";
-import type { CollectionEntry } from "astro:content";
-
-type Post = CollectionEntry<"strapiPosts">;
 
 export async function getStaticPaths() {
   const collection = await getCollection("strapiPosts");
@@ -286,14 +253,12 @@ export async function getStaticPaths() {
   }));
 }
 
-const { featuredImage, author, contentTags, blocks, title, content } = Astro.props;
+const { featuredImage, author, title, content } = Astro.props;
 ---
 
 <h1>{title}</h1>
 {author && <p>By {author.fullName}</p>}
 ```
-
-Everything is fully typed from the Zod schema — your editor autocompletes field names and catches typos at build time.
 
 ### Direct Queries via the Strapi Client
 
@@ -305,61 +270,32 @@ import { strapi } from "@strapi/client";
 
 const BASE_API_URL = (import.meta.env.STRAPI_BASE_URL ?? "http://localhost:1337") + "/api";
 const strapiClient = strapi({ baseURL: BASE_API_URL });
-export { strapiClient };
-```
 
-```typescript
-// utils/loaders.ts
-import { strapiClient } from "./strapi-client";
-
-async function getSingleType(name: string, params: object) {
-  const data = await strapiClient.single(name).find(params);
-  return data;
-}
-
-async function getGlobalPageData() {
-  const data = await getSingleType("global", {
-    populate: {
-      banner: {
-        populate: {
-          link: { fields: ["href", "label", "isExternal"] },
-        },
-      },
-      header: {
-        populate: {
-          logo: { populate: { image: { fields: ["url", "alternativeText"] } } },
-          navItems: true,
-          cta: true,
-        },
-      },
-      footer: {
-        populate: {
-          logo: { populate: { image: { fields: ["url", "alternativeText"] } } },
-          navItems: true,
-          socialLinks: {
-            populate: { image: { fields: ["url", "alternativeText"] } },
-          },
-        },
+// Query single types with nested populate
+const data = await strapiClient.single("global").find({
+  populate: {
+    header: {
+      populate: {
+        logo: { populate: { image: { fields: ["url", "alternativeText"] } } },
+        navItems: true,
+        cta: true,
       },
     },
-  });
-  const globalData = data?.data;
-  if (!globalData) throw new Error("No global data found");
-  return globalData;
-}
+  },
+});
 ```
 
-Same `@strapi/client` package under the hood — the loader just wraps it with Astro's content layer. Both approaches use a single `STRAPI_BASE_URL` environment variable.
+Same `@strapi/client` package under the hood — the loader just wraps it with Astro's content layer. Both use a single `STRAPI_BASE_URL` environment variable.
 
 ### Populate Best Practices
 
-Getting populate right makes a real difference in payload size. Here are the patterns we use:
+Getting populate right makes a real difference in payload size. Three patterns we use:
 
 ```typescript
-// Only fetch specific fields
-fields: ["title", "slug", "description", "content", "publishedAt", "updatedAt"]
+// 1. Only fetch specific fields
+fields: ["title", "slug", "publishedAt"]
 
-// Populate a relation with field selection
+// 2. Populate a relation with field selection
 populate: {
   author: {
     fields: ["fullName"],
@@ -367,38 +303,27 @@ populate: {
   },
 }
 
-// Handle dynamic zones with the "on" syntax — from our blocksPopulate config
+// 3. Handle dynamic zones with the "on" syntax
 populate: {
   blocks: {
     on: {
       "blocks.hero": {
-        populate: {
-          image: { fields: ["url", "alternativeText"] },
-          links: true,
-        },
+        populate: { image: { fields: ["url", "alternativeText"] } },
       },
       "blocks.card-grid": { populate: { card: true } },
-      "blocks.featured-articles": {
-        populate: {
-          articles: {
-            populate: {
-              featuredImage: { fields: ["url", "alternativeText"] },
-              author: { populate: { image: { fields: ["url", "alternativeText"] } } },
-            },
-          },
-        },
-      },
       "blocks.markdown": true,
     },
   },
 }
 ```
 
-Without `fields`, Strapi returns every column. Without targeted `populate`, you get either nothing or everything. For a deep dive, check out [Demystifying Strapi's Populate and Filtering](https://strapi.io/blog/demystifying-strapi-s-populate-and-filtering). For server-side population with middleware, see [Route-Based Middleware to Handle Default Population](https://strapi.io/blog/route-based-middleware-to-handle-default-population-query-logic).
+Without `fields`, Strapi returns every column. Without targeted `populate`, you get either nothing or everything. For a deep dive, check out [Demystifying Strapi's Populate and Filtering](https://strapi.io/blog/demystifying-strapi-s-populate-and-filtering).
+
+**Alternative approach:** Instead of managing populate configs from the Astro side, you can handle it entirely in Strapi using route-based middleware. This lets you define default population logic server-side so every API response comes back fully populated — no `populate` params needed from the client. See [Route-Based Middleware to Handle Default Population](https://strapi.io/blog/route-based-middleware-to-handle-default-population-query-logic) for how to set that up.
 
 ### Handling Strapi Images
 
-Strapi serves images from its own domain, so URLs from the API are often relative paths like `/uploads/photo_abc123.jpg`. We use a `StrapiImage` component to resolve them:
+Strapi returns relative image paths like `/uploads/photo_abc123.jpg`. Our `StrapiImage` component resolves them to full URLs:
 
 ```astro
 ---
@@ -406,88 +331,29 @@ Strapi serves images from its own domain, so URLs from the API are often relativ
 import { Image as AstroImage } from "astro:assets";
 
 const BASE_URL = import.meta.env.STRAPI_BASE_URL ?? "http://localhost:1337";
-
-interface Props {
-  src: string;
-  alt: string | undefined | null;
-  height: number;
-  width: number;
-  class?: string;
-}
-
 const { src, alt, height, width, class: className } = Astro.props;
 
 function getStrapiMedia(url: string | null) {
   if (url == null) return null;
-  if (url.startsWith("data:")) return url;
-  if (url.startsWith("http") || url.startsWith("//")) return url;
+  if (url.startsWith("http") || url.startsWith("//") || url.startsWith("data:")) return url;
   return `${BASE_URL}${url}`;
 }
-
-const imageUrl = getStrapiMedia(src);
 ---
 
-{imageUrl && (
-  <AstroImage src={imageUrl} alt={alt || "No alternative text"}
+{getStrapiMedia(src) && (
+  <AstroImage src={getStrapiMedia(src)} alt={alt || "No alternative text"}
     height={height} width={width} class={className ?? undefined} />
 )}
 ```
 
-Handles absolute URLs (pass through), relative URLs (prepend Strapi base), and data URLs (base64). Astro's `<Image />` handles optimization from there.
-
----
-
-## Astro 6 Changes That Affected Our Project
-
-**Node 22 Minimum**
-
-Astro 6 drops Node 18 and 20 entirely. You need **Node 22.12.0 or higher**. If you're deploying to Vercel, Netlify, or similar — double-check your runtime version. This one will bite you silently if you miss it.
-
-**Zod v4**
-
-This was the big one for us. Astro 6 ships Zod 4 instead of Zod 3:
-
-- Some string validation methods like `z.string().email()` are deprecated in favor of top-level equivalents like `z.email()` (still work, but you'll get warnings)
-- Default values must match the output type after transforms, not the input type
-- The internal class hierarchy is completely different — `instanceof z.ZodType` checks against Zod 3 objects will fail
-
-That last point is exactly what caused our loader to break. More on that below.
-
-**Schema Function Signature Deprecated**
-
-Content loaders used to return `schema` as an async function. In Astro 6, that signature is deprecated — silently ignored now, will throw in a future release. Instead, provide a static `schema` property or use `createSchema()`.
-
----
-
-**Updating the Community Loader**
-
-Our migration was straightforward — if you're upgrading your own project, the [official Astro v6 upgrade guide](https://docs.astro.build/en/guides/upgrade-to/v6/) covers everything you need. Our only hiccup was the community loader.
-
-The `strapi-community-astro-loader` was bundling its own copy of Zod 3, which conflicted with Astro 6's Zod 4. We published **`strapi-community-astro-loader@4.0.0`** to fix it — the loader no longer bundles Zod at all, and schemas are now defined by the user in `defineCollection()` rather than inside the loader itself:
-
-```ts
-// Before (loader v2/v3)
-const strapiPosts = defineCollection({
-  loader: strapiLoader({ contentType: "article", schema: articleSchema, ... }),
-});
-
-// After (loader v4)
-const strapiPosts = defineCollection({
-  loader: strapiLoader({ contentType: "article", ... }),
-  schema: z.object({ ... }),
-});
-```
-
-Under the hood the loader uses `@strapi/client`, pages through all content automatically, and calls Astro's `parseData()` on each document — that's where your Zod schema validation runs. It also uses `generateDigest()` to fingerprint entries so Astro can skip unchanged content on rebuilds. `cacheDurationInMs` is opt-in and defaults to `0` (always fetch fresh). Full source is on [GitHub](https://github.com/PaulBratslavsky/strapi-community-astro-loader).
+Handles absolute, relative, and data URLs. Astro's `<Image />` handles optimization from there.
 
 ---
 
 ## Wrapping Up
 
-If you're upgrading an existing Astro + Strapi project, two changes account for most of the friction: the Node 22 requirement and the loader update. Check your Node version first, then update to `strapi-community-astro-loader@4` and move your schema definitions into `defineCollection()`. That covers the majority of upgrade surface area.
-
 The loader is open source at [github.com/PaulBratslavsky/strapi-community-astro-loader](https://github.com/PaulBratslavsky/strapi-community-astro-loader) — issues and PRs welcome. The full starter is at [github.com/PaulBratslavsky/astro-strapi-example-project](https://github.com/PaulBratslavsky/astro-strapi-example-project).
 
 ---
 
-**Want to go deeper on Astro?** Chris from Coding in Public has an [Astro course](https://www.youtube.com/@codinginpublic) he's currently updating for v6. Watch his [(NEW) Astro 6: First Look](https://www.youtube.com/watch?v=WxUEtNg07gE) for the full rundown, and check the video description for a special Astro 6 discount.
+**Want to go deeper on Astro?** Chris from Coding in Public has an [Astro course](https://learnastro.dev) he's currently updating for v6. 
