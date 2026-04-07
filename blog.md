@@ -2,61 +2,57 @@
 
 With Astro 6 now out, we wanted to take the opportunity to cover what's new and share how we updated our [Astro + Strapi starter project](https://github.com/PaulBratslavsky/astro-strapi-example-project). Overall the migration was smooth — the only real hiccup was needing to update the community loader to handle the Zod 3 to Zod 4 transition.
 
----
-
 ## What's New in Astro 6
 
-Chris from Coding in Public did a full walkthrough of everything that landed in Astro 6 — watch it first if you want the big picture before we get into the Strapi-specific details.
+Chris from Coding in Public did a full walkthrough of everything that landed in Astro 6.  You can watch the full video here, but we will cover all the highlights.
 
 <!-- EMBED: https://www.youtube.com/watch?v=WxUEtNg07gE -->
 
-Here's a quick summary of all the changes Chris covers in the video.
+**Rebuilt Dev Server**
 
-### Rebuilt Dev Server
+Astro 6 ships a rebuilt dev server designed to close the gap between development and production environments. 
 
-Astro 6 ships a rebuilt dev server designed to close the gap between development and production environments. The goal is that what runs locally matches what runs in production — something Cloudflare users especially felt the pain of before. You shouldn't have to change anything in your workflow; the improvements are felt automatically.
-
-### Node 22 Minimum
+**Node 22 Minimum**
 
 Astro 6 drops Node 18 and 20 entirely. You need **Node 22.12.0 or higher**. If you're deploying to Vercel, Netlify, or similar — double-check your runtime version. This one will bite you silently if you miss it.
 
-### Zod v4
+**Zod v4**
 
 Astro 6 ships Zod 4 instead of Zod 3. Some string validation methods like `z.string().email()` are deprecated in favor of top-level equivalents like `z.email()`. The error message API has also changed slightly. This is what broke our loader, covered in detail below.
 
-### Legacy Content Collections Removed
+**Legacy Content Collections Removed**
 
 The old Content Collections API from Astro 2 (the `src/content/` directory-based approach) is fully removed. You have to use the Content Layer API with `content.config.ts` and explicit loaders.
 
-### Schema Function Signature Deprecated
+**Schema Function Signature Deprecated**
 
 Content loaders used to return `schema` as an async function. In Astro 6, that signature is deprecated — silently ignored now, will throw in a future release. Instead, provide a static `schema` property or use `createSchema()`.
 
-### Fonts API (Now Stable)
+**Fonts API (Now Stable)**
 
 No more `<link>` tags or `@font-face` wrestling. Declare your fonts — local, Google Fonts, or Font Source — through a single API and Astro handles preloading. We're using it in our starter with Roboto via Google Fonts.
 
-### Live Content Collections
+**Live Content Collections**
 
 Standard content collections fetch at build time. Live content collections fetch fresh on every request — useful for store prices, inventory, or anything where stale data is a problem. The API uses `getLiveEntry()` and `getLiveCollection()`, defined in a separate `live.config.ts`.
 
-### Content Security Policy (Built-In)
+**Content Security Policy (Built-In)**
 
 One of the first JS meta-frameworks with built-in CSP for both static and dynamic pages. Astro handles script and style hashing automatically, with a full configuration API for when you need more control.
 
-### Experimental Rust Compiler
+**Experimental Rust Compiler**
 
 Early stage and opt-in, but with impressive speed gains. The primary benefit is speed. Worth enabling if you want to try it.
 
-### Queued Rendering
+**Queued Rendering**
 
 Astro currently renders components recursively — rendering functions call themselves as they walk the component tree. Queued rendering replaces this with a two-pass approach: the first pass traverses the tree and emits an ordered queue, the second pass renders it. The result is both faster and more memory-efficient. Planned as the default rendering strategy in Astro 7.
 
-### Route Caching
+**Route Caching**
 
 Experimental, platform-agnostic caching using web-standard semantics. You configure a cache provider in your Astro config — it ships with a built-in memory cache provider to get started. For sites with hundreds of pages, not re-rendering unchanged content on every build is a significant win. Chris expects this to be one of the headline features in Astro 7.
 
-### Breaking Changes to Be Aware Of
+**Breaking Changes to Be Aware Of**
 
 Chris recommends checking the [official Astro v6 upgrade guide](https://docs.astro.build/en/guides/upgrade-to/v6/) for the full list. A few worth calling out:
 
@@ -71,11 +67,11 @@ For the complete list, see the official [Astro v6 upgrade guide](https://docs.as
 
 ## Astro 6 Changes That Affected Our Project
 
-### Node 22 Minimum
+**Node 22 Minimum**
 
 Astro 6 drops Node 18 and 20 entirely. You need **Node 22.12.0 or higher**. If you're deploying to Vercel, Netlify, or similar — double-check your runtime version. This one will bite you silently if you miss it.
 
-### Zod v4
+**Zod v4**
 
 This was the big one for us. Astro 6 ships Zod 4 instead of Zod 3:
 
@@ -85,17 +81,13 @@ This was the big one for us. Astro 6 ships Zod 4 instead of Zod 3:
 
 That last point is exactly what caused our loader to break. More on that below.
 
-### Legacy Content Collections Removed
-
-The old Content Collections API from Astro 2 (the `src/content/` directory-based approach) is fully removed. You have to use the Content Layer API with `content.config.ts` and explicit loaders.
-
-### Schema Function Signature Deprecated
+**Schema Function Signature Deprecated**
 
 Content loaders used to return `schema` as an async function. In Astro 6, that signature is deprecated — silently ignored now, will throw in a future release. Instead, provide a static `schema` property or use `createSchema()`.
 
 ---
 
-## Updating the Community Loader
+**Updating the Community Loader**
 
 Our migration was straightforward — if you're upgrading your own project, the [official Astro v6 upgrade guide](https://docs.astro.build/en/guides/upgrade-to/v6/) covers everything you need. Our only hiccup was the community loader.
 
