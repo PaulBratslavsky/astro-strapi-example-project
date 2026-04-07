@@ -1,6 +1,8 @@
 _Co-authored by [Paul Bratslavsky](https://x.com/codingthirty) and [Chris from Coding in Public](https://www.youtube.com/@codinginpublic)_
 
-With Astro 6 now out, we wanted to take the opportunity to cover what's new and share how we updated our [Astro + Strapi starter project](https://github.com/PaulBratslavsky/astro-strapi-example-project). Overall the migration was smooth. Our only hiccup was needing to update the [community loader](https://github.com/PaulBratslavsky/strapi-community-astro-loader) to handle the Zod 3 to Zod 4 transition. The good news, the loader now supports Astro 6.
+With [Astro 6](https://astro.build/blog/astro-6) now out, we wanted to take the opportunity to cover what's new and share how we updated our [Astro starter for Strapi](https://github.com/PaulBratslavsky/astro-strapi-example-project). 
+
+Overall the migration was smooth. Our only hiccup was needing to update the [community loader](https://github.com/PaulBratslavsky/strapi-community-astro-loader) to handle the Zod 3 to Zod 4 transition. The good news, the loader now supports Astro 6.
 
 ## TL;DR
 
@@ -338,7 +340,7 @@ Handles absolute, relative, and data URLs. Astro's `<Image />` handles optimizat
 
 ## Wrapping Up
 
-The loader is open source at [github.com/PaulBratslavsky/strapi-community-astro-loader](https://github.com/PaulBratslavsky/strapi-community-astro-loader) — issues and PRs welcome. The full starter is at [github.com/PaulBratslavsky/astro-strapi-example-project](https://github.com/PaulBratslavsky/astro-strapi-example-project).
+The loader is open source at [github.com/PaulBratslavsky/strapi-community-astro-loader](https://github.com/PaulBratslavsky/strapi-community-astro-loader) — issues and PRs welcome. The full Astro starter is at [github.com/PaulBratslavsky/astro-strapi-example-project](https://github.com/PaulBratslavsky/astro-strapi-example-project).
 
 ---
 
