@@ -168,21 +168,7 @@ Then visit `http://localhost:4321/faqs` to see the result.
 
 Curious how we handle data loading in our Strapi starter? Whether you're using the `/add-page` skill or building pages manually, understanding the data pipeline will help you get the most out of the project.
 
-```mermaid
-flowchart LR
-    A[Strapi API] --> B[Loader]
-    B --> C[Content Layer]
-    C --> D[Zod Validation]
-    D --> E[Typed Props]
-    E --> F[Templates]
-
-    style A fill:#4945FF,color:#fff,stroke:none
-    style B fill:#1e293b,color:#fff,stroke:none
-    style C fill:#FF5D01,color:#fff,stroke:none
-    style D fill:#3178c6,color:#fff,stroke:none
-    style E fill:#16a34a,color:#fff,stroke:none
-    style F fill:#FF5D01,color:#fff,stroke:none
-```
+![mermaid-diagram-2026-04-07T18-56-04.png](https://delicate-dawn-ac25646e6d.media.strapiapp.com/mermaid_diagram_2026_04_07_T18_56_04_db1cebd2aa.png)
 
 We demonstrate two ways to load data from Strapi: the **content loader** and the **Strapi client**. You could use the loader for everything, but we wanted to include both approaches as examples.
 
