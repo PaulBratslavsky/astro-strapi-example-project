@@ -1,0 +1,172 @@
+---
+import StrapiImage from "../../components/StrapiImage.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Pagination from "../../components/Pagination.astro";
+import { getCollection } from "astro:content";
+
+import type { CollectionEntry } from "astro:content";
+
+type Item = CollectionEntry<"strapiProducts">;
+
+type CollectionItem = {
+  params: { slug: string };
+  props: Item;
+};
+
+type PaginatedPage = {
+  data: CollectionItem[];
+  currentPage: number;
+  total: number;
+  size: number;
+  url: {
+    prev: string | null;
+    next: string | null;
+  };
+};
+
+const categoryConfig: Record<string, { label: string; description: string }> = {
+  outerwear: { label: "Outerwear", description: "Jackets, coats & layers built to last" },
+  tops: { label: "Tops", description: "Shirts, tees & sweaters worth reaching for" },
+  bottoms: { label: "Bottoms", description: "Pants, jeans & shorts that move with you" },
+  accessories: { label: "Accessories", description: "The finishing touches that tie it together" },
+};
+
+function formatPrice(price: number) {
+  return `$${price.toFixed(0)}`;
+}
+
+export async function getStaticPaths({ paginate }: { paginate: any }) {
+  const collection = await getCollection("strapiProducts");
+
+  function createStaticPaths(items: Item[]) {
+    return items.map((item) => ({
+      params: { slug: item.data.slug },
+      props: item,
+    }));
+  }
+
+  const staticPaths = createStaticPaths(collection);
+
+  const paginatedData = paginate(staticPaths, {
+    pageSize: 20,
+    url: {
+      prev: "/products",
+      next: "/products",
+    },
+  });
+
+  return paginatedData;
+}
+
+const { page }: { page: PaginatedPage } = Astro.props;
+
+const items = page.data;
+const currentPage = page.currentPage;
+const totalPages = Math.ceil(page.total / page.size);
+
+// Group items by category
+const categoryOrder = ["outerwear", "tops", "bottoms", "accessories"];
+const grouped = categoryOrder.reduce((acc, cat) => {
+  acc[cat] = items.filter((item) => item.props.data.category === cat);
+  return acc;
+}, {} as Record<string, CollectionItem[]>);
+---
+
+<BaseLayout>
+  <!-- Hero -->
+  <section class="bg-surface-alt">
+    <div class="mx-auto max-w-6xl px-6 py-20 text-center">
+      <p class="text-sm font-semibold tracking-widest uppercase text-primary-600">Curated Collection</p>
+      <h1 class="mt-3 text-5xl font-bold tracking-tight text-secondary font-heading sm:text-6xl">
+        Clothes That Tell a Story
+      </h1>
+      <p class="mt-5 max-w-2xl mx-auto text-lg text-muted leading-relaxed">
+        Every piece in our collection is chosen for its craft, material, and the way it ages.
+        No trends, no fast fashion — just things worth owning.
+      </p>
+    </div>
+  </section>
+
+  <!-- Category navigation -->
+  <nav class="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur-sm">
+    <div class="mx-auto max-w-6xl px-6 flex gap-8 overflow-x-auto">
+      {categoryOrder.map((cat) => {
+        const config = categoryConfig[cat];
+        return (
+          <a
+            href={`#${cat}`}
+            class="shrink-0 py-4 text-sm font-medium text-muted hover:text-primary-600 transition border-b-2 border-transparent hover:border-primary-600"
+          >
+            {config.label}
+          </a>
+        );
+      })}
+    </div>
+  </nav>
+
+  <!-- Products by category -->
+  <div class="mx-auto max-w-6xl px-6 py-12 space-y-20">
+    {categoryOrder.map((cat) => {
+      const config = categoryConfig[cat];
+      const catItems = grouped[cat];
+
+      if (!catItems || catItems.length === 0) return null;
+
+      return (
+        <section id={cat}>
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold text-secondary font-heading">{config.label}</h2>
+            <p class="mt-1 text-muted">{config.description}</p>
+          </div>
+          <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {catItems.map((item: CollectionItem) => {
+              const { title, image, price, material } = item.props.data;
+              return (
+                <a
+                  href={`/products/${item.params.slug}`}
+                  class="group flex flex-col rounded-xl border border-border bg-surface-raised overflow-hidden transition hover:shadow-lg hover:border-border-hover"
+                >
+                  <div class="relative overflow-hidden bg-surface-alt">
+                    {image ? (
+                      <StrapiImage
+                        class="aspect-[4/5] w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                        src={image.url}
+                        alt={image.alternativeText || ""}
+                        height={500}
+                        width={400}
+                      />
+                    ) : (
+                      <div class="aspect-[4/5] w-full bg-surface-alt flex items-center justify-center">
+                        <span class="text-4xl font-bold text-faint font-heading">{title.charAt(0)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div class="p-5 flex flex-col flex-1">
+                    <h3 class="text-sm font-semibold text-secondary group-hover:text-primary-600 transition font-heading leading-snug">
+                      {title}
+                    </h3>
+                    {material && (
+                      <p class="mt-1 text-xs text-faint">{material}</p>
+                    )}
+                    <p class="mt-3 text-base font-bold text-secondary">{formatPrice(price)}</p>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </section>
+      );
+    })}
+  </div>
+
+  {totalPages > 1 && (
+    <div class="mx-auto max-w-6xl px-6 pb-16">
+      <Pagination
+        previousPage={page.url.prev ? page.url.prev : null}
+        nextPage={page.url.next ? page.url.next : null}
+        currentPage={currentPage}
+        totalPages={totalPages}
+      />
+    </div>
+  )}
+</BaseLayout>

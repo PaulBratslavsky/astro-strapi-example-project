@@ -331,8 +331,31 @@ const strapiWorkshops = defineCollection({
   }),
 });
 
+const strapiProducts = defineCollection({
+  loader: strapiLoader({
+    contentType: "product",
+    clientConfig,
+    params: {
+      fields: ["title", "slug", "description", "price", "category", "material"],
+      populate: {
+        image: { fields: ["url", "alternativeText"] },
+      },
+    },
+  }),
+  schema: z.object({
+    title: z.string(),
+    slug: z.string(),
+    description: z.string().nullable().optional(),
+    price: z.number(),
+    category: z.enum(["outerwear", "tops", "bottoms", "accessories"]),
+    material: z.string().nullable().optional(),
+    image: imageSchema.nullable().optional(),
+  }),
+});
+
 export const collections = {
   strapiPosts,
   strapiPages,
   strapiWorkshops,
+  strapiProducts,
 };

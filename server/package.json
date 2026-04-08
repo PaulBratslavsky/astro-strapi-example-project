@@ -11,7 +11,8 @@
     "strapi": "strapi",
     "clean": "rm -rf dist",
     "seed:workshop": "node scripts/seed-workshop.js",
-    "seed:community": "node scripts/seed-community.js"
+    "seed:community": "node scripts/seed-community.js",
+    "seed:product": "node scripts/seed-product.js"
   },
   "dependencies": {
     "@strapi/plugin-cloud": "5.41.1",

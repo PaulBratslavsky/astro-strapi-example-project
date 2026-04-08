@@ -1,0 +1,92 @@
+---
+import StrapiImage from "../../components/StrapiImage.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+import type { CollectionEntry } from "astro:content";
+
+type Item = CollectionEntry<"strapiProducts">;
+
+export async function getStaticPaths() {
+  const collection = await getCollection("strapiProducts");
+
+  return collection.map((item) => ({
+    params: { slug: item.data.slug },
+    props: item.data,
+  }));
+}
+
+const { props } = Astro;
+const { title, description, price, category, material, image } = props;
+
+const categoryLabels: Record<string, string> = {
+  outerwear: "Outerwear",
+  tops: "Tops",
+  bottoms: "Bottoms",
+  accessories: "Accessories",
+};
+
+function formatPrice(p: number) {
+  return `$${p.toFixed(0)}`;
+}
+---
+
+<BaseLayout>
+  <section class="mx-auto max-w-5xl px-6 py-16">
+    <a href="/products" class="inline-flex items-center gap-1 text-sm text-muted hover:text-primary-600 transition">
+      &larr; Back to Products
+    </a>
+
+    <div class="mt-8 grid gap-12 lg:grid-cols-2">
+      <!-- Product image -->
+      <div class="overflow-hidden rounded-2xl bg-surface-alt">
+        {image ? (
+          <StrapiImage
+            class="w-full aspect-[4/5] object-cover"
+            src={image.url}
+            alt={image.alternativeText || ""}
+            height={800}
+            width={640}
+          />
+        ) : (
+          <div class="w-full aspect-[4/5] flex items-center justify-center">
+            <span class="text-6xl font-bold text-faint font-heading">{title.charAt(0)}</span>
+          </div>
+        )}
+      </div>
+
+      <!-- Product details -->
+      <div class="flex flex-col justify-center">
+        {category && (
+          <a
+            href={`/products#${category}`}
+            class="inline-block text-xs font-semibold tracking-widest uppercase text-primary-600 hover:text-primary-700 transition"
+          >
+            {categoryLabels[category] || category}
+          </a>
+        )}
+        <h1 class="mt-3 text-3xl font-bold tracking-tight text-secondary font-heading sm:text-4xl">{title}</h1>
+        <p class="mt-4 text-3xl font-bold text-secondary">{formatPrice(price)}</p>
+
+        {description && (
+          <p class="mt-6 text-muted leading-relaxed">{description}</p>
+        )}
+
+        {material && (
+          <div class="mt-8 rounded-xl border border-border bg-surface-raised p-5">
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-primary-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
+              </svg>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-faint">Material</p>
+                <p class="mt-1 text-sm font-medium text-secondary">{material}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
