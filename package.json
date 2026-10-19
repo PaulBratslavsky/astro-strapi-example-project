@@ -1,7 +1,7 @@
 {
   "name": "astro-strapi-example-project",
   "version": "1.0.0",
-  "description": "Astro 5 project with Strapi 5",
+  "description": "Astro 7 project with Strapi 5",
   "type": "module",
   "scripts": {
     "client": "yarn dev --prefix ../client/",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@types/node": "^22.5.2",
-    "astro": "^5.7.4",
+    "astro": "^7.4.1",
     "concurrently": "^8.2.2",
     "typescript": "^5.0.0",
     "wait-on": "^8.0.1"

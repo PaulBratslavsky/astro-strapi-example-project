@@ -3,7 +3,7 @@ import { z } from "astro/zod";
 import { strapiLoader } from "strapi-community-astro-loader";
 
 const clientConfig = {
-  baseURL: import.meta.env.STRAPI_BASE_URL || "http://localhost:1337/api",
+  baseURL: (import.meta.env.STRAPI_BASE_URL ?? "http://localhost:1337") + "/api",
 };
 
 // ── Reusable schemas ──
