@@ -2,7 +2,7 @@
 
 ## Stack
 
-- **Frontend:** Astro 6 with Tailwind CSS v4
+- **Frontend:** Astro 7 with Tailwind CSS v4
 - **Backend:** Strapi 5 (latest) with SQLite
 - **Content loader:** `strapi-community-astro-loader` v4 via Astro's Content Layer API
 - **Package manager:** yarn

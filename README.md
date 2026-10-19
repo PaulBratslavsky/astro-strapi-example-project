@@ -1,6 +1,6 @@
-# Astro 6 and Strapi 5 Example Project
+# Astro 7 and Strapi 5 Example Project
 
-This is an example project for Astro 6 and Strapi 5 (latest). It is a simple project that uses Astro and Strapi to create a website with a landing page, a blog, and a contact form.
+This is an example project for Astro 7 and Strapi 5 (latest). It is a simple project that uses Astro and Strapi to create a website with a landing page, a blog, and a contact form.
 
 Uses [strapi-community-astro-loader v4](https://www.npmjs.com/package/strapi-community-astro-loader) to fetch data from Strapi for pages and articles via Astro's Content Layer API.
 
