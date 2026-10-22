@@ -6,9 +6,10 @@ Uses [strapi-community-astro-loader v4](https://www.npmjs.com/package/strapi-com
 
 ### What's New
 
-- **Astro v6** with Zod v4 support
-- **Strapi v5** (latest)
-- **strapi-community-astro-loader v4** — updated for Astro v6 compatibility, uses `@strapi/client` under the hood, and requires user-defined schemas
+- **Astro v7**, which builds with Vite 8 and the new Rust compiler
+- **Strapi v5.58** (latest)
+- **Tailwind CSS v4.3**
+- **strapi-community-astro-loader v4.1**: supports Astro 6 and 7, uses `@strapi/client` under the hood, and requires user-defined schemas
 
 (contact form not implemented yet)
 
@@ -16,33 +17,85 @@ Uses [strapi-community-astro-loader v4](https://www.npmjs.com/package/strapi-com
 
 ## Getting Started
 
-1. Clone the repository
+### Prerequisites
 
-In the root directory, run:
+- **Node.js 22.22 or newer**. Astro 7 needs at least 22.22.0, and Strapi supports Node 20 through 26, so any version from 22.22 up to 26 works. Check with `node -v`.
+- **Yarn 4**. Check with `yarn -v`. If it prints `1.x`, install Yarn 4 through Corepack, which ships with Node:
+
+  ```bash
+  corepack enable
+  ```
+
+  ```bash
+  corepack install -g yarn@stable
+  ```
+
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/PaulBratslavsky/astro-strapi-example-project.git
 ```
 
-2. Install the dependencies
+```bash
+cd astro-strapi-example-project
+```
 
-In the root directory, run:
+### 2. Install the dependencies
+
+Run these from the project root. Run `yarn install` first: Yarn 4 can't run the `setup` script until the root dependencies are installed.
+
+```bash
+yarn install
+```
 
 ```bash
 yarn setup
 ```
 
-To seed the database, run:
+`yarn setup` installs the `client` and `server` dependencies and copies `server/.env.example` to `server/.env`. It also prints `.env.example file does not exist` for the client. That's expected: the client has no required environment variables.
+
+### 3. Seed the database
 
 ```bash
 yarn seed
 ```
 
+This imports `server/seed-data.tar.gz`, which holds the content types' entries, images, and settings, into a local SQLite database.
 
-And do start both the Astro client and the Strapi server:
+### 4. Start the project
 
 ```bash
 yarn dev
+```
+
+This starts Strapi first, waits for it on port 1337, then starts Astro.
+
+| What | URL |
+| --- | --- |
+| Astro site | http://localhost:4321 |
+| Strapi admin | http://localhost:1337/admin |
+
+The seed data doesn't include admin accounts. The first time you open the Strapi admin, it asks you to create one.
+
+### Environment variables
+
+| Variable | Where | Default | Purpose |
+| --- | --- | --- | --- |
+| `PORT` | `server/.env` | `1337` | Port Strapi listens on |
+| `STRAPI_BASE_URL` | client environment | `http://localhost:1337` | Strapi URL the Astro client fetches from. Don't add `/api`; the client appends it. |
+
+### Running Strapi on a different port
+
+If port 1337 is already in use, for example by another Strapi project, start the two apps separately instead of using `yarn dev`. In one terminal, start Strapi:
+
+```bash
+cd server && PORT=1338 yarn develop
+```
+
+In a second terminal, start Astro and point it at that port:
+
+```bash
+cd client && STRAPI_BASE_URL=http://localhost:1338 yarn dev
 ```
 
 ## Project Structure
@@ -122,13 +175,16 @@ For collection types like articles and pages, we use `strapi-community-astro-loa
 
 ```typescript
 // client/src/content.config.ts
-import { defineCollection, z } from "astro:content";
+import { defineCollection } from "astro:content";
+import { z } from "astro/zod";
 import { strapiLoader } from "strapi-community-astro-loader";
 
 const strapiPosts = defineCollection({
   loader: strapiLoader({
     contentType: "article",
-    clientConfig: { baseURL: "http://localhost:1337/api" },
+    clientConfig: {
+      baseURL: (import.meta.env.STRAPI_BASE_URL ?? "http://localhost:1337") + "/api",
+    },
     params: {
       fields: ["title", "slug", "description"],
       populate: {
