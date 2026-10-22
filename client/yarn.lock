@@ -1406,7 +1406,7 @@ __metadata:
     "@tailwindcss/vite": "npm:^4.3.3"
     astro: "npm:7.4.1"
     marked: "npm:^15.0.7"
-    strapi-community-astro-loader: "npm:^4.0.0"
+    strapi-community-astro-loader: "npm:^4.1.0"
     tailwindcss: "npm:^4.3.3"
   languageName: unknown
   linkType: soft
@@ -3258,15 +3258,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strapi-community-astro-loader@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "strapi-community-astro-loader@npm:4.0.0"
+"strapi-community-astro-loader@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "strapi-community-astro-loader@npm:4.1.0"
   dependencies:
     "@strapi/client": "npm:^1.2.0"
     tiny-invariant: "npm:^1.3.3"
   peerDependencies:
-    astro: ^6.0.0
-  checksum: 10c0/46c69165a328d53a91996638bac8a73a3a8e7e3dc73cf55ba9740c982612b0d9654ab901749171b349b15146676bcc922c83b4115139f7a9aded1fc4ab0f3fd0
+    astro: ^6.0.0 || ^7.0.0
+  checksum: 10c0/f42aa3127f9e9a35bc8acf86d463d76f420bfffe2130ef4587243c2c927b217aac9080e988b04a33e4cfbe5adfeb28cb9f843ab2244c0af80506643246c9db3a
   languageName: node
   linkType: hard
 
